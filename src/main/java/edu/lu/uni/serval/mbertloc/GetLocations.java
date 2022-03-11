@@ -5,7 +5,8 @@ import edu.lu.uni.serval.mbertloc.mbertlocator.FileRequest;
 import edu.lu.uni.serval.mbertloc.mbertlocator.LocationsCollector;
 import edu.lu.uni.serval.mbertloc.mbertlocator.MethodRequest;
 
-import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -50,39 +51,48 @@ public class GetLocations {
         return fileRequest;
     }
 
-    public static void main(String...args) throws IOException {
-        List<FileRequest> fileRequests = new ArrayList<>();
-        String locationsOutputDirectory = "output";
+    public static void main(String...args) {
+        try {
+            List<FileRequest> fileRequests = new ArrayList<>();
+            String locationsOutputDirectory = "output";
 
 
-        for (int i = 0; i< args.length; i++ ) {
-            if (args[i].startsWith("-in=")) {
-                fileRequests.add(parseFileArgs(args[i]));
-            } else if (args[i].startsWith("-out=")) {
-                locationsOutputDirectory = args[i].replace("-out=", "");
+            for (int i = 0; i < args.length; i++) {
+                if (args[i].startsWith("-in=")) {
+                    fileRequests.add(parseFileArgs(args[i]));
+                } else if (args[i].startsWith("-out=")) {
+                    locationsOutputDirectory = args[i].replace("-out=", "");
+                }
             }
+
+            if (fileRequests.isEmpty()) {
+                correctUssage("No File passed!");
+                System.exit(1);
+            }
+
+            System.out.println("--- Initialisation ---");
+            System.out.println("--- Output to the directory: \n" + locationsOutputDirectory);
+            System.out.println("--- Target locations : \n" + fileRequests);
+
+            LocationsCollector locationsCollector = new LocationsCollector(locationsOutputDirectory);
+            int nextMutantId = 0;
+            for (FileRequest fileRequest : fileRequests) {
+                fileRequest.setLocationsCollector(locationsCollector);
+                fileRequest.setNextMutantId(nextMutantId);
+                System.out.println("--- locating... \n" + fileRequest + "\n");
+                fileRequest.locateTokens();
+                nextMutantId = fileRequest.getNextMutantId();
+            }
+
+            locationsCollector.outputResults();
+        } catch (Throwable throwable){
+            System.err.println("Failed = " + Arrays.toString(args));
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            throwable.printStackTrace(pw);
+            System.err.println(sw.toString());
+            System.exit(100);
         }
-
-        if (fileRequests.isEmpty()) {
-            correctUssage("No File passed!");
-            System.exit(1);
-        }
-
-        System.out.println("--- Initialisation ---");
-        System.out.println("--- Output to the directory: \n" + locationsOutputDirectory);
-        System.out.println("--- Target locations : \n" + fileRequests);
-
-        LocationsCollector locationsCollector = new LocationsCollector(locationsOutputDirectory);
-        int nextMutantId = 0;
-        for (FileRequest fileRequest : fileRequests) {
-            fileRequest.setLocationsCollector(locationsCollector);
-            fileRequest.setNextMutantId(nextMutantId);
-            System.out.println("--- locating... \n" + fileRequest + "\n");
-            fileRequest.locateTokens();
-            nextMutantId = fileRequest.getNextMutantId();
-        }
-
-        locationsCollector.outputResults();
     }
 
     private static void correctUssage(String s) {

@@ -73,8 +73,14 @@ public class FileRequest {
     public void locateTokens() {
         Launcher l = createLauncher();
 
-        CtClass origClass = (CtClass) l.getFactory().Package().getRootPackage()
-                .getElements(new TypeFilter(CtClass.class)).get(0);
+        List<CtClass> origClasses =  l.getFactory().Package().getRootPackage()
+                .getElements(new TypeFilter<CtClass>(CtClass.class));
+        if (origClasses == null || origClasses.isEmpty()){
+            System.err.println("Ignored File: No class found in " + javaFilePath);
+            return;
+        }
+
+        CtClass origClass = origClasses.get(0);
 
         // iterate on each method
         List<CtElement> methodsToBeMutated = origClass.getElements(arg0 -> (arg0 instanceof CtMethod && isMethodToMutate((CtMethod) arg0)));

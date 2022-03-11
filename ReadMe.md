@@ -9,5 +9,6 @@ Outputs a json file with those locations.
 - testing.
 - better input checking. (check and handle duplicate files args)
 - better output handling. (check and handle duplicate output locations)
-- logging. (add log4j)
+
+- [ ] refactor 'methodPredictions' ... to locations
 

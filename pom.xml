@@ -6,7 +6,7 @@
 
     <groupId>edu.lu.uni.serval.mbertloc</groupId>
     <artifactId>mBERT-locations</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0.1-SNAPSHOT</version>
 
 
     <properties>
@@ -54,8 +54,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <source>8</source>
+                    <target>8</target>
                 </configuration>
             </plugin>
 
@@ -72,7 +72,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        edu.lu.uni.serval.ibir.main.Main
+                                        edu.lu.uni.serval.mbertloc.GetLocations
                                     </mainClass>
                                 </manifest>
                             </archive>

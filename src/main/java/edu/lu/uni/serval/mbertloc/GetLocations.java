@@ -77,7 +77,7 @@ public class GetLocations {
         for (FileRequest fileRequest : fileRequests) {
             fileRequest.setLocationsCollector(locationsCollector);
             fileRequest.setNextMutantId(nextMutantId);
-            System.out.println("--- locating... \n" + fileRequests + "\n");
+            System.out.println("--- locating... \n" + fileRequest + "\n");
             fileRequest.locateTokens();
             nextMutantId = fileRequest.getNextMutantId();
         }

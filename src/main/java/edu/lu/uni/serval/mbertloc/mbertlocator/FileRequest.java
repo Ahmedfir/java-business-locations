@@ -68,8 +68,10 @@ public class FileRequest {
 
     /**
      * collects a list of mutation locations.
+     *
+     * @param numberOfTokens number of tokens or locations to mask. if it's null, there's no limit.
      */
-    public void locateTokens() {
+    public void locateTokens(Integer numberOfTokens) {
         Launcher l = createLauncher();
 
         List<CtClass> origClasses = l.getFactory().Package().getRootPackage()
@@ -106,6 +108,9 @@ public class FileRequest {
                                     MBertLocation.createMBertLocation(nextMutantId, e),
                                     methodStartLineNumber, methodEndLine, methodCodePosition);
                     nextMutantId += 5;
+                    if (numberOfTokensAchieved(numberOfTokens)){
+                        break;
+                    }
                 } catch (MBertLocation.UnhandledElementException exception) {
                     locationsCollector.addUnhandledMutations(exception.getNodeType());
                     System.err.println(exception);
@@ -175,4 +180,12 @@ public class FileRequest {
         this.nextMutantId = nextMutantId;
     }
 
+    /**
+     *
+     * @param numberOfTokens number of tokens or locations to mask. if it's null, there's no limit.
+     * @return true if the numberOfTokens is not null and is achieved, otherwise false.
+     */
+    public boolean numberOfTokensAchieved(Integer numberOfTokens) {
+        return numberOfTokens != null && nextMutantId / 5 >= numberOfTokens;
+    }
 }

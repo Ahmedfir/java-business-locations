@@ -8,8 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static edu.lu.uni.serval.mbertloc.cli.CliArgPrefix.FILE_EXCLUDE_REQUEST;
-import static edu.lu.uni.serval.mbertloc.cli.CliArgPrefix.FILE_INCLUDE_REQUEST;
+import static edu.lu.uni.serval.mbertloc.cli.CliArgPrefix.*;
 
 public class CliRequest {
 
@@ -23,18 +22,20 @@ public class CliRequest {
             "5) include a file excluding lines\n" +
             "- example args usage:\n" +
             "java edu.lu.uni.serval.mbertloc.GetLocations \n" +
+            "-n=10" +
             "-in=source_file_name:method_name@line@line@line:method_name@line@line@line \n" +
             "-in=source_file_name::line@line@line \n" +
             "-ex=exclude_file_name::line_to_exclude@line_to_exclude@line_to_exclude \n" +
             "-out=locations_directory\n";
     private final List<FileRequest> fileRequests;
     private final String outputDir;
+    private final Integer numberOfTokens;
 
     public static CliRequest parseArgs(String[] args) {
         List<FileRequest> fileRequests = new ArrayList<>();
         List<FileRequest> fileExcludeRequests = new ArrayList<>();
         String locationsOutputDirectory = "output";
-
+        Integer numberOfTokens = null;
 
         for (String arg : args) {
             try {
@@ -47,7 +48,10 @@ public class CliRequest {
                         fileExcludeRequests.add(parseFileArgs(arg, FILE_EXCLUDE_REQUEST));
                         break;
                     case OUTPUT_DIR:
-                        locationsOutputDirectory = arg.replace("-out=", "");
+                        locationsOutputDirectory = arg.replace(OUTPUT_DIR.argPrefix, "");
+                        break;
+                    case NUMBER_OF_TOKENS:
+                        numberOfTokens = Integer.parseInt(arg.replace(OUTPUT_DIR.argPrefix, ""));
                         break;
                 }
             } catch (IllegalArgumentException e) {
@@ -84,12 +88,13 @@ public class CliRequest {
             }
         }
 
-        return new CliRequest(fileRequests, locationsOutputDirectory);
+        return new CliRequest(fileRequests, locationsOutputDirectory, numberOfTokens);
     }
 
-    private CliRequest(List<FileRequest> fileRequests, String outputDir) {
+    private CliRequest(List<FileRequest> fileRequests, String outputDir, Integer numberOfTokens) {
         this.fileRequests = fileRequests;
         this.outputDir = outputDir;
+        this.numberOfTokens = numberOfTokens;
     }
 
     public List<FileRequest> getFileRequests() {
@@ -159,6 +164,11 @@ public class CliRequest {
         return "CliRequest{" +
                 "fileRequests=" + fileRequests +
                 ", outputDir='" + outputDir + '\'' +
+                ", numberOfTokens=" + numberOfTokens +
                 '}';
+    }
+
+    public Integer getNumberOfTokens() {
+        return numberOfTokens;
     }
 }

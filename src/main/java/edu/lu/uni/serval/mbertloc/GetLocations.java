@@ -20,10 +20,12 @@ public class GetLocations {
                 fileRequest.setLocationsCollector(locationsCollector);
                 fileRequest.setNextMutantId(nextMutantId);
                 System.out.println("--- locating... \n" + fileRequest + "\n");
-                fileRequest.locateTokens();
+                fileRequest.locateTokens(cliRequest.getNumberOfTokens());
+                if (fileRequest.numberOfTokensAchieved(cliRequest.getNumberOfTokens()))
+                    break; // number of tokens achieved.
+
                 nextMutantId = fileRequest.getNextMutantId();
             }
-
             locationsCollector.outputResults();
         } catch (Throwable throwable) {
             System.err.println("Failed = " + Arrays.toString(args));

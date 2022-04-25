@@ -1,6 +1,7 @@
 package edu.lu.uni.serval.mbertloc.cli;
 
 enum CliArgPrefix {
+    NUMBER_OF_TOKENS("-n="),
     FILE_INCLUDE_REQUEST("-in="),
     FILE_EXCLUDE_REQUEST("-ex="),
     OUTPUT_DIR("-out=");

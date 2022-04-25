@@ -18,21 +18,20 @@ import static edu.lu.uni.serval.mbertloc.mbertlocator.MBertUtils.isToBeProcessed
 
 public class FileRequest {
     private LocationsCollector locationsCollector;
-    private String javaFilePath;
-    private List<MethodRequest> methodsToMutate;
-    private List<Integer> linesToMutate;
-
-    private int nextMutantId = 0;
-
-    public FileRequest(String javaFilePath, LocationsCollector locationsCollector) {
-        this.javaFilePath = javaFilePath;
-        this.locationsCollector = locationsCollector;
-    }
+    protected String javaFilePath;
+    protected List<MethodRequest> methodsToMutate;
+    protected List<Integer> linesToMutate;
+    protected int nextMutantId = 0;
+    private FileRequest excludeFileRequest;
 
     public FileRequest(String filePath, List<MethodRequest> methods, List<Integer> lines) {
         this.javaFilePath = filePath;
         this.linesToMutate = lines;
         this.methodsToMutate = methods;
+    }
+
+    public void setExcludeFileRequest(FileRequest excludeFileRequest) {
+        this.excludeFileRequest = excludeFileRequest;
     }
 
     public String getJavaFilePath() {
@@ -73,9 +72,9 @@ public class FileRequest {
     public void locateTokens() {
         Launcher l = createLauncher();
 
-        List<CtClass> origClasses =  l.getFactory().Package().getRootPackage()
+        List<CtClass> origClasses = l.getFactory().Package().getRootPackage()
                 .getElements(new TypeFilter<CtClass>(CtClass.class));
-        if (origClasses == null || origClasses.isEmpty()){
+        if (origClasses == null || origClasses.isEmpty()) {
             System.err.println("Ignored File: No class found in " + javaFilePath);
             return;
         }
@@ -95,7 +94,7 @@ public class FileRequest {
             CodePosition methodCodePosition = new CodePosition(sourcePosition.getSourceStart(), sourcePosition.getSourceEnd());
 
             List<CtElement> elementsToBeMutated = method.getElements(arg0 ->
-                    isToBeProcessed(arg0) && isLineToMutate(getSourcePosition(arg0)));
+                    isToBeProcessed(arg0) && isLineToMutate(getSourcePosition(arg0).getLine()));
 
             for (CtElement e : elementsToBeMutated) {
 
@@ -116,11 +115,15 @@ public class FileRequest {
         }
     }
 
-    private boolean isMethodToMutate(CtMethod arg0) {
-        if ((methodsToMutate == null || methodsToMutate.isEmpty()) && (linesToMutate == null || linesToMutate.isEmpty())) // exhaustive search.
+    protected boolean isMethodToMutate(CtMethod arg0) {
+        if ((methodsToMutate == null || methodsToMutate.isEmpty())
+                && (linesToMutate == null || linesToMutate.isEmpty())
+                && excludeFileRequest == null) // exhaustive search.
         {
             System.out.println("Exhaustive search in " + javaFilePath + " \n - no line or method specified.");
             return true;
+        } else if (excludeFileRequest != null && !excludeFileRequest.isMethodToMutate(arg0)) {
+            return false;
         }
         if (methodsToMutate != null) {
             for (MethodRequest methodRequest : methodsToMutate) {
@@ -139,11 +142,11 @@ public class FileRequest {
     }
 
 
-    public boolean isLineToMutate(SourcePosition e) {
+    public boolean isLineToMutate(int line) {
         //is the line selected to be mutated?
         if (linesToMutate.isEmpty())
             return true;
-        if (linesToMutate.contains(e.getLine()))
+        if (linesToMutate.contains(line))
             return true;
         return false;
     }
@@ -155,6 +158,7 @@ public class FileRequest {
                 ", methodsToMutate=" + methodsToMutate +
                 ", linesToMutate=" + linesToMutate +
                 ", mutantId=" + nextMutantId +
+                ", excluding_request=" + excludeFileRequest.toString() +
                 '}';
     }
 

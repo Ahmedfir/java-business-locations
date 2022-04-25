@@ -8,10 +8,6 @@ public class MethodRequest {
     private String methodName;
     private List<Integer>  linesToMutate;
 
-    public MethodRequest(String methodName, List<Integer> linesToMutate) {
-        this.methodName = methodName;
-        this.linesToMutate = linesToMutate;
-    }
 
     public MethodRequest(String methodName) {
         this.methodName = methodName;

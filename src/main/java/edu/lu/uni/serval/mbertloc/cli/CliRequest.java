@@ -15,13 +15,17 @@ import static edu.lu.uni.serval.mbertloc.cli.CliArgPrefix.*;
 public class CliRequest {
 
     private static final String DEFAULT_OUTPUT_DIR = "output";
-    public static final String ERROR_MESSAGE = "- available requests:\n" +
+    public static final String ERROR_MESSAGE = "- available requests features:\n" +
             "You can either include:" +
             "1) a file or \n " +
             "2) specific methods of a file or \n " +
             "3) specific lines of a file or \n" +
             "4) include a file excluding methods or \n " +
             "5) include a file excluding lines\n" +
+            "- available arguments:\n" +
+            Arrays.toString(values()) + "\n" +
+            "- available selection modes: \n" +
+            Arrays.toString(SelectionMode.values()) + "\n" +
             "- example args usage:\n" +
             "java edu.lu.uni.serval.mbertloc.GetLocations \n" +
             "-n=10" +
@@ -32,17 +36,19 @@ public class CliRequest {
     final List<FileRequest> fileRequests;
     final String outputDir;
     final Integer numberOfTokens;
+    final SelectionMode selectionMode;
 
     public static CliRequest parseArgs(String[] args) {
         List<FileRequest> fileRequests = new ArrayList<>();
         List<FileRequest> fileExcludeRequests = new ArrayList<>();
-        String locationsOutputDirectory = "output";
+        String locationsOutputDirectory = DEFAULT_OUTPUT_DIR;
         Integer numberOfTokens = null;
+        SelectionMode selectionMode = SelectionMode.ORDERED;
 
         for (String arg : args) {
             try {
                 CliArgPrefix cliArgPrefix = CliArgPrefix.startsWithPrefix(arg);
-                String argBody = arg.replace(cliArgPrefix.argPrefix,"");
+                String argBody = arg.replace(cliArgPrefix.argPrefix, "");
 
                 switch (cliArgPrefix) {
                     case FILE_INCLUDE_REQUEST:
@@ -56,6 +62,9 @@ public class CliRequest {
                         break;
                     case NUMBER_OF_TOKENS:
                         numberOfTokens = Integer.parseInt(argBody);
+                        break;
+                    case SELECTION_MODE:
+                        selectionMode = SelectionMode.forId(argBody);
                         break;
                 }
             } catch (IllegalArgumentException e) {
@@ -92,13 +101,14 @@ public class CliRequest {
             }
         }
 
-        return new CliRequest(fileRequests, locationsOutputDirectory, numberOfTokens);
+        return new CliRequest(fileRequests, locationsOutputDirectory, numberOfTokens, selectionMode);
     }
 
-    private CliRequest(List<FileRequest> fileRequests, String outputDir, Integer numberOfTokens) {
+    private CliRequest(List<FileRequest> fileRequests, String outputDir, Integer numberOfTokens, SelectionMode selectionMode) {
         this.fileRequests = fileRequests;
         this.outputDir = outputDir;
         this.numberOfTokens = numberOfTokens;
+        this.selectionMode = selectionMode;
     }
 
     public void start() {
@@ -108,7 +118,7 @@ public class CliRequest {
             fileRequest.setLocationsCollector(locationsCollector);
             fileRequest.setNextMutantId(nextMutantId);
             System.out.println("--- locating... \n" + fileRequest + "\n");
-            fileRequest.locateTokens(numberOfTokens, SelectionMode.ORDERED); // TODO: 26/04/2022
+            fileRequest.locateTokens(numberOfTokens, selectionMode); // TODO: 26/04/2022
             if (fileRequest.numberOfTokensAchieved(numberOfTokens))
                 break; // number of tokens achieved.
             nextMutantId = fileRequest.getNextMutantId();
@@ -174,6 +184,7 @@ public class CliRequest {
                 "fileRequests=" + fileRequests +
                 ", outputDir='" + outputDir + '\'' +
                 ", numberOfTokens=" + numberOfTokens +
+                ", selectionMode=" + selectionMode +
                 '}';
     }
 }

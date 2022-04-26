@@ -17,4 +17,11 @@ public enum SelectionMode {
         }
         return ORDERED;
     }
+
+    @Override
+    public String toString() {
+        return "SelectionMode{" +
+                "id='" + id + '\'' +
+                '}';
+    }
 }

@@ -4,7 +4,8 @@ enum CliArgPrefix {
     NUMBER_OF_TOKENS("-n="),
     FILE_INCLUDE_REQUEST("-in="),
     FILE_EXCLUDE_REQUEST("-ex="),
-    OUTPUT_DIR("-out=");
+    OUTPUT_DIR("-out="),
+    SELECTION_MODE("-selection=") ;
 
     final String argPrefix;
 

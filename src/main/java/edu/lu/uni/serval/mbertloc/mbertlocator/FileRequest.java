@@ -1,10 +1,7 @@
 package edu.lu.uni.serval.mbertloc.mbertlocator;
 
 import edu.lu.uni.serval.mbertloc.mbertlocations.MBertLocation;
-import edu.lu.uni.serval.mbertloc.mbertlocator.selection.Element;
-import edu.lu.uni.serval.mbertloc.mbertlocator.selection.ElementsSelector;
-import edu.lu.uni.serval.mbertloc.mbertlocator.selection.OrderedSelection;
-import edu.lu.uni.serval.mbertloc.mbertlocator.selection.SelectionMode;
+import edu.lu.uni.serval.mbertloc.mbertlocator.selection.*;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.SourcePosition;
@@ -81,7 +78,13 @@ public class FileRequest {
         ElementsSelector selector;
         switch (selectionMode) {
             case RANDOM:
-                // todo
+                selector = new RandomSelection(methodsToBeMutated) {
+                    @Override
+                    public boolean isLineToMutate(int line) {
+                        return FileRequest.this.isLineToMutate(line);
+                    }
+                };
+                break;
             case ORDERED:
             default:
                 selector = new OrderedSelection(methodsToBeMutated) {
@@ -90,6 +93,7 @@ public class FileRequest {
                         return FileRequest.this.isLineToMutate(line);
                     }
                 };
+                break;
         }
 
         while (selector.hasNext()) {

@@ -121,7 +121,7 @@ public class FileRequest {
                 && (linesToMutate == null || linesToMutate.isEmpty())
                 && excludeFileRequest == null) // exhaustive search.
         {
-            System.out.println("Exhaustive search in " + javaFilePath + " \n - no line or method specified.");
+            //System.out.println("Exhaustive search in " + javaFilePath + " \n - no line or method specified.");
             return true;
         } else if (excludeFileRequest != null && !excludeFileRequest.isMethodToMutate(arg0)) {
             return false;
@@ -145,7 +145,7 @@ public class FileRequest {
 
     public boolean isLineToMutate(int line) {
         //is the line selected to be mutated?
-        if (linesToMutate.isEmpty())
+        if (linesToMutate == null || linesToMutate.isEmpty())
             return true;
         if (linesToMutate.contains(line))
             return true;

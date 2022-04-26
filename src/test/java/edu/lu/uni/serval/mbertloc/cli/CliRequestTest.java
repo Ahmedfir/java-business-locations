@@ -99,7 +99,6 @@ public class CliRequestTest {
     @Test
     public void sys_test__process_one_files_multiple_lines() throws IOException {
         Path expectDir = expectedDir.resolve("sys_test__process_one_files_multiple_lines");
-        Files.createDirectories(expectDir);
         assertTrue(expectDir.toFile().isDirectory());
         Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
         File expectedFile = expectedJson.toFile();
@@ -111,6 +110,25 @@ public class CliRequestTest {
         File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
 
         String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-out=" + outDir, "-n=5"};
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        cliRequest.start();
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+    @Test
+    public void sys_test__process_one_file_no_lines() throws IOException {
+        Path expectDir = expectedDir.resolve("sys_test__process_one_file_no_lines");
+        assertTrue(expectDir.toFile().isDirectory());
+        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
+        File expectedFile = expectedJson.toFile();
+        assertTrue(expectedFile.isFile());
+
+        Path outDir = outputDir.resolve("sys_test__process_one_file_no_lines");
+        Files.createDirectories(outDir);
+        assertTrue(outputDir.toFile().isDirectory());
+        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
+
+        String[] req = {"-in=" + file_1 , "-out=" + outDir, "-n=5","-selection=random"};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));

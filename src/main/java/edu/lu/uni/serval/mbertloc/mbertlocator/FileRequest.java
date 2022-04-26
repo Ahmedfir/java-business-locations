@@ -1,19 +1,21 @@
 package edu.lu.uni.serval.mbertloc.mbertlocator;
 
 import edu.lu.uni.serval.mbertloc.mbertlocations.MBertLocation;
-import edu.lu.uni.serval.mbertloc.output.CodePosition;
+import edu.lu.uni.serval.mbertloc.mbertlocator.selection.Element;
+import edu.lu.uni.serval.mbertloc.mbertlocator.selection.ElementsSelector;
+import edu.lu.uni.serval.mbertloc.mbertlocator.selection.OrderedSelection;
+import edu.lu.uni.serval.mbertloc.mbertlocator.selection.SelectionMode;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
 import spoon.reflect.cu.SourcePosition;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.*;
 import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.util.List;
+import java.util.Objects;
 
 import static edu.lu.uni.serval.mbertloc.mbertlocator.MBertUtils.getSourcePosition;
-import static edu.lu.uni.serval.mbertloc.mbertlocator.MBertUtils.isToBeProcessed;
+import static edu.lu.uni.serval.mbertloc.mbertlocator.MBertUtils.isMethod;
 
 
 public class FileRequest {
@@ -38,25 +40,10 @@ public class FileRequest {
         return javaFilePath;
     }
 
-    public void setJavaFilePath(String javaFilePath) {
-        this.javaFilePath = javaFilePath;
-    }
-
-    public List<MethodRequest> getMethodsToMutate() {
-        return methodsToMutate;
-    }
-
-    public void setMethodsToMutate(List<MethodRequest> methodsToMutate) {
-        this.methodsToMutate = methodsToMutate;
-    }
-
     public List<Integer> getLinesToMutate() {
         return linesToMutate;
     }
 
-    public void setLinesToMutate(List<Integer> linesToMutate) {
-        this.linesToMutate = linesToMutate;
-    }
 
     private Launcher createLauncher() {
         Launcher l = new Launcher();
@@ -71,7 +58,7 @@ public class FileRequest {
      *
      * @param numberOfTokens number of tokens or locations to mask. if it's null, there's no limit.
      */
-    public void locateTokens(Integer numberOfTokens) {
+    public void locateTokens(Integer numberOfTokens, SelectionMode selectionMode) {
         Launcher l = createLauncher();
 
         List<CtClass> origClasses = l.getFactory().Package().getRootPackage()
@@ -84,43 +71,48 @@ public class FileRequest {
         CtClass origClass = origClasses.get(0);
 
         // iterate on each method
-        List<CtElement> methodsToBeMutated = origClass.getElements(arg0 -> (arg0 instanceof CtMethod && isMethodToMutate((CtMethod) arg0)));
+        List<CtElement> methodsToBeMutated = origClass.getElements(arg0 -> (isMethod(arg0) && isMethodToMutate((CtExecutable) arg0)));
+        if (methodsToBeMutated == null || methodsToBeMutated.isEmpty()) {
+            System.err.println("Ignored File: No method found in " + javaFilePath);
+            return;
+        }
 
-        for (CtElement met : methodsToBeMutated) {
-            // iterate on each method
-            CtMethod method = (CtMethod) met;
-            // mutate the element
-            SourcePosition sourcePosition = getSourcePosition(method);
-            int methodStartLineNumber = sourcePosition.getLine();
-            int methodEndLine = sourcePosition.getEndLine();
-            CodePosition methodCodePosition = new CodePosition(sourcePosition.getSourceStart(), sourcePosition.getSourceEnd());
+        String classQualifiedName = origClass.getQualifiedName();
+        ElementsSelector selector;
+        switch (selectionMode) {
+            case RANDOM:
+                // todo
+            case ORDERED:
+            default:
+                selector = new OrderedSelection(methodsToBeMutated) {
+                    @Override
+                    public boolean isLineToMutate(int line) {
+                        return FileRequest.this.isLineToMutate(line);
+                    }
+                };
+        }
 
-            List<CtElement> elementsToBeMutated = method.getElements(arg0 ->
-                    isToBeProcessed(arg0) && isLineToMutate(getSourcePosition(arg0).getLine()));
-
-            for (CtElement e : elementsToBeMutated) {
-
+        while (selector.hasNext()) {
+            Element element = selector.next();
+            if (element != null) {
                 try {
-                    locationsCollector
-                            .addLocation(javaFilePath, origClass.getQualifiedName(),
-                                    method.getSignature(),
-                                    getSourcePosition(e).getLine(),
-                                    MBertLocation.createMBertLocation(nextMutantId, e),
-                                    methodStartLineNumber, methodEndLine, methodCodePosition);
+                    locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
+                            getSourcePosition(element.ctElement).getLine(),
+                            MBertLocation.createMBertLocation(nextMutantId, element.ctElement),
+                            element.method.startLine, element.method.endLine, element.method.codePosition);
                     nextMutantId += 5;
-                    if (numberOfTokensAchieved(numberOfTokens)){
+                    if (numberOfTokensAchieved(numberOfTokens)) {
                         break;
                     }
                 } catch (MBertLocation.UnhandledElementException exception) {
                     locationsCollector.addUnhandledMutations(exception.getNodeType());
                     System.err.println(exception);
                 }
-
             }
         }
     }
 
-    protected boolean isMethodToMutate(CtMethod arg0) {
+    protected boolean isMethodToMutate(CtExecutable arg0) {
         if ((methodsToMutate == null || methodsToMutate.isEmpty())
                 && (linesToMutate == null || linesToMutate.isEmpty())
                 && excludeFileRequest == null) // exhaustive search.
@@ -163,7 +155,7 @@ public class FileRequest {
                 ", methodsToMutate=" + methodsToMutate +
                 ", linesToMutate=" + linesToMutate +
                 ", mutantId=" + nextMutantId +
-                ", excluding_request=" + excludeFileRequest.toString() +
+                ", excluding_request=" + excludeFileRequest +
                 '}';
     }
 
@@ -181,11 +173,23 @@ public class FileRequest {
     }
 
     /**
-     *
      * @param numberOfTokens number of tokens or locations to mask. if it's null, there's no limit.
      * @return true if the numberOfTokens is not null and is achieved, otherwise false.
      */
     public boolean numberOfTokensAchieved(Integer numberOfTokens) {
         return numberOfTokens != null && nextMutantId / 5 >= numberOfTokens;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FileRequest that = (FileRequest) o;
+        return nextMutantId == that.nextMutantId && javaFilePath.equals(that.javaFilePath) && Objects.equals(methodsToMutate, that.methodsToMutate) && Objects.equals(linesToMutate, that.linesToMutate) && Objects.equals(excludeFileRequest, that.excludeFileRequest);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(javaFilePath, methodsToMutate, linesToMutate, nextMutantId, excludeFileRequest);
     }
 }

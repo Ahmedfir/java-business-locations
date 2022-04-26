@@ -10,7 +10,6 @@ import edu.lu.uni.serval.mbertloc.utils.GsonHolder;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -24,7 +23,8 @@ import java.util.Map;
  */
 public class LocationsCollector extends Mappable<String, FileLocations> {
 
-    private String locationsFileName = "locations.json";
+    public static final String DEFAULT_JSON_LOCATIONS_FILE_NAME = "locations.json";
+    private String locationsFileName = DEFAULT_JSON_LOCATIONS_FILE_NAME;
 
     private final List<FileLocations> fileLocations;
     private final Map<String, Integer> unhandledTokens;
@@ -85,10 +85,10 @@ public class LocationsCollector extends Mappable<String, FileLocations> {
         unhandledTokens.put(nodeType, count + 1);
     }
 
-    public void outputUnhandledTokens(){
-        System.out.println(" - unhandled tokens stats : \ncount , nodeType \n" );
+    public void outputUnhandledTokens() {
+        System.out.println(" - unhandled tokens stats : \ncount , nodeType \n");
         for (String nodeType : unhandledTokens.keySet()) {
-            System.out.println(unhandledTokens.get(nodeType) +" , " +nodeType +" \n");
+            System.out.println(unhandledTokens.get(nodeType) + " , " + nodeType + " \n");
         }
     }
 }

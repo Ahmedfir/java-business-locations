@@ -1,7 +1,9 @@
 package edu.lu.uni.serval.mbertloc.cli;
 
 import edu.lu.uni.serval.mbertloc.mbertlocator.FileRequest;
+import edu.lu.uni.serval.mbertloc.mbertlocator.LocationsCollector;
 import edu.lu.uni.serval.mbertloc.mbertlocator.MethodRequest;
+import edu.lu.uni.serval.mbertloc.mbertlocator.selection.SelectionMode;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -27,9 +29,9 @@ public class CliRequest {
             "-in=source_file_name::line@line@line \n" +
             "-ex=exclude_file_name::line_to_exclude@line_to_exclude@line_to_exclude \n" +
             "-out=locations_directory\n";
-    private final List<FileRequest> fileRequests;
-    private final String outputDir;
-    private final Integer numberOfTokens;
+    final List<FileRequest> fileRequests;
+    final String outputDir;
+    final Integer numberOfTokens;
 
     public static CliRequest parseArgs(String[] args) {
         List<FileRequest> fileRequests = new ArrayList<>();
@@ -40,18 +42,20 @@ public class CliRequest {
         for (String arg : args) {
             try {
                 CliArgPrefix cliArgPrefix = CliArgPrefix.startsWithPrefix(arg);
+                String argBody = arg.replace(cliArgPrefix.argPrefix,"");
+
                 switch (cliArgPrefix) {
                     case FILE_INCLUDE_REQUEST:
-                        fileRequests.add(parseFileArgs(arg, FILE_INCLUDE_REQUEST));
+                        fileRequests.add(parseFileArgs(argBody, cliArgPrefix));
                         break;
                     case FILE_EXCLUDE_REQUEST:
-                        fileExcludeRequests.add(parseFileArgs(arg, FILE_EXCLUDE_REQUEST));
+                        fileExcludeRequests.add(parseFileArgs(argBody, cliArgPrefix));
                         break;
                     case OUTPUT_DIR:
-                        locationsOutputDirectory = arg.replace(OUTPUT_DIR.argPrefix, "");
+                        locationsOutputDirectory = argBody;
                         break;
                     case NUMBER_OF_TOKENS:
-                        numberOfTokens = Integer.parseInt(arg.replace(OUTPUT_DIR.argPrefix, ""));
+                        numberOfTokens = Integer.parseInt(argBody);
                         break;
                 }
             } catch (IllegalArgumentException e) {
@@ -97,20 +101,25 @@ public class CliRequest {
         this.numberOfTokens = numberOfTokens;
     }
 
-    public List<FileRequest> getFileRequests() {
-        return fileRequests;
+    public void start() {
+        LocationsCollector locationsCollector = new LocationsCollector(outputDir);
+        int nextMutantId = 0;
+        for (FileRequest fileRequest : fileRequests) {
+            fileRequest.setLocationsCollector(locationsCollector);
+            fileRequest.setNextMutantId(nextMutantId);
+            System.out.println("--- locating... \n" + fileRequest + "\n");
+            fileRequest.locateTokens(numberOfTokens, SelectionMode.ORDERED); // TODO: 26/04/2022
+            if (fileRequest.numberOfTokensAchieved(numberOfTokens))
+                break; // number of tokens achieved.
+            nextMutantId = fileRequest.getNextMutantId();
+        }
+        locationsCollector.outputResults();
     }
 
-    public String getOutputDir() {
-        return outputDir;
-    }
 
-
-    private static FileRequest parseFileArgs(String arg, CliArgPrefix cliArgPrefix) {
-        assert arg.startsWith(cliArgPrefix.argPrefix) : "Wrong arg prefix! " + arg;
+    private static FileRequest parseFileArgs(String argBody, CliArgPrefix cliArgPrefix) {
         assert cliArgPrefix == FILE_INCLUDE_REQUEST || cliArgPrefix == FILE_EXCLUDE_REQUEST;
-        String request = arg.replace(cliArgPrefix.argPrefix, "");
-        String[] splits = request.split(":");
+        String[] splits = argBody.split(":");
         String filePath = splits[0];
         if (!new File(filePath).exists()) {
             correctUssage("wrong file path", new IllegalArgumentException(filePath));
@@ -166,9 +175,5 @@ public class CliRequest {
                 ", outputDir='" + outputDir + '\'' +
                 ", numberOfTokens=" + numberOfTokens +
                 '}';
-    }
-
-    public Integer getNumberOfTokens() {
-        return numberOfTokens;
     }
 }

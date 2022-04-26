@@ -2,7 +2,7 @@ package edu.lu.uni.serval.mbertloc.cli;
 
 import edu.lu.uni.serval.mbertloc.mbertlocator.FileRequest;
 import edu.lu.uni.serval.mbertloc.mbertlocator.MethodRequest;
-import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.CtExecutable;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ class ExcludeFileRequest extends FileRequest {
     }
 
     @Override
-    public boolean isMethodToMutate(CtMethod arg0) {
+    public boolean isMethodToMutate(CtExecutable arg0) {
         return !super.isMethodToMutate(arg0);
     }
 

@@ -2,10 +2,7 @@ package edu.lu.uni.serval.mbertloc.mbertlocator;
 
 import spoon.reflect.code.*;
 import spoon.reflect.cu.SourcePosition;
-import spoon.reflect.declaration.CtAnnotation;
-import spoon.reflect.declaration.CtClass;
-import spoon.reflect.declaration.CtElement;
-import spoon.reflect.declaration.CtMethod;
+import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeReference;
 
@@ -15,7 +12,7 @@ public final class MBertUtils {
     }
 
     public static boolean inheritsFromAssertion(CtElement e) {
-        if (e == null || e instanceof CtMethod || e instanceof CtClass)
+        if (e == null || isMethod(e) || e instanceof CtClass)
             return false;
         if (e instanceof CtAssert)
             return true;
@@ -37,9 +34,8 @@ public final class MBertUtils {
     }
 
 
-
     public static boolean isImplicit(CtElement e) {
-        if (e == null || e instanceof CtMethod || e instanceof CtClass)
+        if (e == null || isMethod(e) || e instanceof CtClass)
             return false;
         if (e.isImplicit())
             return true;
@@ -71,9 +67,13 @@ public final class MBertUtils {
         return false;
     }
 
+    public static boolean isMethod(CtElement e) {
+        return e instanceof CtMethod || e instanceof CtConstructor;
+    }
+
 
     public static boolean inheritsFromConstructorCall(CtElement e) {
-        if (e == null || e instanceof CtMethod || e instanceof CtClass)
+        if (e == null || isMethod(e) || e instanceof CtClass)
             return false;
         if (e instanceof CtConstructorCall)
             return true;

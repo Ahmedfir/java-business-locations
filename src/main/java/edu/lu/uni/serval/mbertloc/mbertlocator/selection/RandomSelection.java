@@ -1,5 +1,6 @@
 package edu.lu.uni.serval.mbertloc.mbertlocator.selection;
 
+import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 
@@ -20,8 +21,10 @@ public abstract class RandomSelection implements ElementsSelector {
     public RandomSelection(List<CtElement> methodsToBeMutated) {
         elements = new ArrayList<>();
         for (CtElement met : methodsToBeMutated) {
+            SourcePosition sourcePosition = getSourcePosition(met);
+            if (sourcePosition == null) continue;
             CtExecutable ctMethod = (CtExecutable) met;
-            Method method = new Method(ctMethod);
+            Method method = new Method(ctMethod.getSignature(), sourcePosition);
             List<CtElement> methodsElementsToBeMutated = ctMethod.getElements(arg0 ->
                     isToBeProcessed(arg0) && isLineToMutate(getSourcePosition(arg0).getLine()));
             if (methodsElementsToBeMutated == null || methodsElementsToBeMutated.isEmpty()) continue;

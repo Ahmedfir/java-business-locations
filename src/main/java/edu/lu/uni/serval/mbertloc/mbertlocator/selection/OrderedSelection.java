@@ -1,5 +1,6 @@
 package edu.lu.uni.serval.mbertloc.mbertlocator.selection;
 
+import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
 
@@ -41,18 +42,20 @@ public abstract class OrderedSelection implements ElementsSelector {
         return null;
     }
 
-
     private void nextMethod() {
-        CtExecutable ctMethod = null;
-        while ((methodsElementsToBeMutated == null || methodsElementsToBeMutated.isEmpty()) && notLastMethod()) {
-            currentMethodPos++;
-            ctMethod = (CtExecutable) methodsToBeMutated.get(currentMethodPos);
-            methodsElementsToBeMutated = ctMethod.getElements(arg0 ->
-                    isToBeProcessed(arg0) && isLineToMutate(getSourcePosition(arg0).getLine()));
-
-        }
+        methodsElementsToBeMutated = null;
         this.currentElementPos = -1;
-        this.currentMethod = new Method(ctMethod);
+        this.currentMethod = null;
+        while (methodsElementsToBeMutated == null && currentMethod == null && notLastMethod()) {
+            currentMethodPos++;
+            CtExecutable ctMethod = (CtExecutable) methodsToBeMutated.get(currentMethodPos);
+            SourcePosition sourcePosition = getSourcePosition(ctMethod);
+            if (sourcePosition != null) {
+                methodsElementsToBeMutated = ctMethod.getElements(arg0 ->
+                        isToBeProcessed(arg0) && isLineToMutate(getSourcePosition(arg0).getLine()));
+                this.currentMethod = new Method(ctMethod.getSignature(), sourcePosition);
+            }
+        }
     }
 
     private boolean notLastMethod() {
@@ -64,6 +67,6 @@ public abstract class OrderedSelection implements ElementsSelector {
     }
 
     private static boolean notLastItem(List items, int pos) {
-        return pos < items.size() - 1;
+        return items != null && !items.isEmpty() && pos < items.size() - 1;
     }
 }

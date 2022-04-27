@@ -13,11 +13,10 @@ public class Method {
     public final CodePosition codePosition;
     public final String signature;
 
-    public Method(CtExecutable method) {
-        SourcePosition sourcePosition = getSourcePosition(method);
+    public Method(String signature, SourcePosition sourcePosition) {
         startLine = sourcePosition.getLine();
         endLine = sourcePosition.getEndLine();
         codePosition = new CodePosition(sourcePosition.getSourceStart(), sourcePosition.getSourceEnd());
-        signature = method.getSignature();
+        this.signature = signature;
     }
 }

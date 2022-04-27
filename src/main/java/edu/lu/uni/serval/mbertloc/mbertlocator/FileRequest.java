@@ -68,7 +68,7 @@ public class FileRequest {
         CtClass origClass = origClasses.get(0);
 
         // iterate on each method
-        List<CtElement> methodsToBeMutated = origClass.getElements(arg0 -> (isMethod(arg0) && isMethodToMutate((CtExecutable) arg0)));
+        List<CtElement> methodsToBeMutated = origClass.getElements(arg0 -> (isMethod(arg0) && getSourcePosition(arg0) != null && isMethodToMutate((CtExecutable) arg0)));
         if (methodsToBeMutated == null || methodsToBeMutated.isEmpty()) {
             System.err.println("Ignored File: No method found in " + javaFilePath);
             return;

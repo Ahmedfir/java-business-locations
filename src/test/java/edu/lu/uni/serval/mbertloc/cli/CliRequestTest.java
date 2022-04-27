@@ -19,6 +19,9 @@ import static org.junit.Assert.*;
 
 public class CliRequestTest {
 
+    private static final String FILE_3 = "src/test/resources/javafile/Role.java";
+    private static final String FILE_4 = "src/test/resources/javafile/User.java";
+    private static final String FILE_5 = "src/test/resources/javafile/UserRole.java";
 
     private static final String file_1 = "src/test/resources/javafile/ArgumentImpl.java";
     private static final String lines_1_str = "109@115@124@126";
@@ -134,8 +137,29 @@ public class CliRequestTest {
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
+    @Test
+    public void sys_test__process_3_files_no_lines() throws IOException {
+        Path expectDir = expectedDir.resolve("sys_test__process_3_files_no_lines");
+        assertTrue(expectDir.toFile().isDirectory());
+        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
+        File expectedFile = expectedJson.toFile();
+        assertTrue(expectedFile.isFile());
+
+        Path outDir = outputDir.resolve("sys_test__process_3_files_no_lines");
+        Files.createDirectories(outDir);
+        assertTrue(outputDir.toFile().isDirectory());
+        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
+
+        String[] req = {"-in=" + FILE_3 ,"-in=" + FILE_4 ,"-in=" + FILE_5 , "-out=" + outDir};
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        cliRequest.start();
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
     @AfterClass
     public static void afterClass() throws Exception {
         FileUtils.deleteDirectory(outputDir.toFile());
     }
+
+    // '-in=/Users/ahmed.khanfir/PycharmProjects/CBMuPy/smartshark/repos_dir/b/FC-12/src/main/java/us/jts/fortress/rbac/Role.java' '-in=/Users/ahmed.khanfir/PycharmProjects/CBMuPy/smartshark/repos_dir/b/FC-12/src/main/java/us/jts/fortress/rbac/UserRole.java' '-in=/Users/ahmed.khanfir/PycharmProjects/CBMuPy/smartshark/repos_dir/b/FC-12/src/main/java/us/jts/fortress/rbac/User.java' -out=/Users/ahmed.khanfir/PycharmProjects/CBMuPy/smartshark/output_loc/mBERTlocations/b/FC-12
 }

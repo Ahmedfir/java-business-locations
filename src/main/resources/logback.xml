@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false">
-	<property name="APP_NAME" value="mBERT-LOC"/>
+	<property name="APP_NAME" value="java-business-locs"/>
 	<contextName>${APP_NAME}</contextName>
 
     <property name="LOG_HOME" value="logs" />  

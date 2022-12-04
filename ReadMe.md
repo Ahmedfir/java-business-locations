@@ -1,23 +1,34 @@
 # java-business-locations
 
-Parses the files passed as parameter and extract the business logic locations.
+Parses the files passed as parameter and extract the business logic locations, then outputs them a json file with.
 
-Outputs a json file with those locations.
+This module has been first developed to study code naturalness captured by generative language (see https://github.com/Ahmedfir/CodeBERT-nt).
+So if you use this tool in your research, we would appreciate that you cite:
 
-## runner:
+    @article{khanfir2022codebertnt,
+      title={CodeBERT-nt: code naturalness via CodeBERT},
+      author={Khanfir, Ahmed and Jimenez, Matthieu and Papadakis, Mike and Traon, Yves Le},
+      journal={arXiv preprint arXiv:2208.06042},
+      year={2022}
+    }
 
-`edu.lu.uni.serval.mbertloc.GetLocations`
 
-## example params with input (files , (lines)) to parse and an output directory:
+## Runner:
+
+`edu.lu.uni.serval.javabusinesslocs.GetLocations`.
+
+You can see example usages of this runner in `https://github.com/Ahmedfir/cbnt`.
+
+## Example params with input (files , (lines)) to parse and an output directory:
 
 `
   -in=/PATH_TO_REPO/Cli/src/java/org/apache/commons/cli2/commandline/WriteableCommandLineImpl.java::132@133@135
   -in=/PATH_TO_REPO/Cli/src/java/org/apache/commons/cli2/WriteableCommandLine.java::47
   -in=/PATH_TO_REPO/Cli/src/java/org/apache/commons/cli2/option/ArgumentImpl.java::144
-  -out=/PATH_TO_OUT/output/mBERTlocations/f/Cli_13
+  -out=/PATH_TO_OUT/output/locations/f/Cli_13
 `
 
-## example params with input (files , (lines)) exclude (files , (lines)) to parse and an output directory:
+## Example params with input (files , (lines)) exclude (files , (lines)) to parse and an output directory:
 
 `
   -in=/PATH_TO_REPO/Cli/src/java/org/apache/commons/cli2/commandline/WriteableCommandLineImpl.java
@@ -26,15 +37,15 @@ Outputs a json file with those locations.
   -ex=/PATH_TO_REPO/Cli/src/java/org/apache/commons/cli2/commandline/WriteableCommandLineImpl.java::132@133@135
   -ex=/PATH_TO_REPO/Cli/src/java/org/apache/commons/cli2/WriteableCommandLine.java::47
   -ex=/PATH_TO_REPO/Cli/src/java/org/apache/commons/cli2/option/ArgumentImpl.java::144
-  -out=/PATH_TO_OUT/output/mBERTlocations/f/Cli_13
+  -out=/PATH_TO_OUT/output/locations/f/Cli_13
 `
-similar to :
-
-
 
 ## Next todos:
 
-- testing.
-- better input checking. (check and handle duplicate files args)
-- better output handling. (check and handle duplicate output locations)
+- More testing.
+- Better input checking. (check and handle duplicate files args)
+- Better output handling. (check and handle duplicate output locations)
 
+
+#### Credits:
+The majority of these locations have been used before in μBERT: https://github.com/rdegiovanni/mBERT.

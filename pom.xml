@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>edu.lu.uni.serval.mbertloc</groupId>
-    <artifactId>mBERT-locations</artifactId>
+    <groupId>edu.lu.uni.serval.javabusinesslocs</groupId>
+    <artifactId>javabusinesslocs</artifactId>
     <version>1.1.0-SNAPSHOT</version>
 
 
@@ -95,7 +95,7 @@
                             <archive>
                                 <manifest>
                                     <mainClass>
-                                        edu.lu.uni.serval.mbertloc.GetLocations
+                                        edu.lu.uni.serval.javabusinesslocs.GetLocations
                                     </mainClass>
                                 </manifest>
                             </archive>

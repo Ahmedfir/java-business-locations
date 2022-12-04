@@ -1,6 +1,6 @@
-# mBERT-locations
+# java-business-locations
 
-Parses the files passed as parameter and extract the locations targeted by mBERT.
+Parses the files passed as parameter and extract the business logic locations.
 
 Outputs a json file with those locations.
 

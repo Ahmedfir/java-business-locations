@@ -17,7 +17,8 @@ So if you use this tool in your research, we would appreciate that you cite:
 
 `edu.lu.uni.serval.javabusinesslocs.GetLocations`.
 
-You can see example usages of this runner in `https://github.com/Ahmedfir/cbnt`.
+You can see example usages of this runner and their output in our `test` folder.
+You can call this runner using either from source-code or using our released jar, i.e. see how the jar is called using python scripts in `https://github.com/Ahmedfir/cbnt`.
 
 ## Example params with input (files , (lines)) to parse and an output directory:
 
@@ -43,6 +44,7 @@ You can see example usages of this runner in `https://github.com/Ahmedfir/cbnt`.
 ## Next todos:
 
 - More testing.
+- Better documentation.
 - Better input checking. (check and handle duplicate files args)
 - Better output handling. (check and handle duplicate output locations)
 

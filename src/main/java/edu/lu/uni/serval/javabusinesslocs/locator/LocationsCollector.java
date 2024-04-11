@@ -37,7 +37,7 @@ public class LocationsCollector extends Mappable<String, FileLocations> {
     }
 
 
-    public void outputResults() {
+    public List<FileLocations> outputResults() {
 
         // print the results to file as json.
         Gson gson = GsonHolder.getGson();
@@ -54,6 +54,7 @@ public class LocationsCollector extends Mappable<String, FileLocations> {
             System.out.println("++++");
             System.out.println(gson.toJson(fileLocations));
         }
+        return fileLocations;
     }
 
     public void addLocation(String fileToBeMutated, String className,

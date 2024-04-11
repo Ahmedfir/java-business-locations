@@ -58,4 +58,11 @@ public class LineLocations implements Queryable<Integer> {
     public Integer getQueryable() {
         return line_number;
     }
+
+    @Override
+    public String toString() {
+        return
+                "line_number=" + line_number +
+                '}';
+    }
 }

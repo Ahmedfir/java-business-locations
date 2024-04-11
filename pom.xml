@@ -63,6 +63,13 @@
             <version>2.9.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <scope>test</scope>
+            <version>5.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

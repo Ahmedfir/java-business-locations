@@ -9,16 +9,18 @@ import spoon.reflect.cu.CompilationUnit;
 import spoon.reflect.cu.SourcePosition;
 import spoon.support.reflect.cu.position.SourcePositionImpl;
 
+import java.io.IOException;
+
 import static edu.lu.uni.serval.javabusinesslocs.output.Operators.UnaryOperatorMutator;
 
 public class UnaryOperatorLocation extends BusinessLocation<CtUnaryOperator> {
 
-    protected UnaryOperatorLocation(int firstMutantId, CtUnaryOperator ctElement) throws UnhandledElementException {
-        super(firstMutantId, ctElement);
+    protected UnaryOperatorLocation(int firstMutantId, CtUnaryOperator ctElement, PositionChecker positionChecker) throws UnhandledElementException, IOException {
+        super(firstMutantId, ctElement, positionChecker);
     }
 
     @Override
-    protected CodePosition getCodePosition(CtUnaryOperator original) throws UnhandledElementException {
+    protected CodePosition getCodePosition(CtUnaryOperator original) throws UnhandledElementException, IOException {
         int start = original.getPosition().getSourceStart();
         int end = original.getPosition().getSourceEnd();
         if (isPre(original.getKind()))
@@ -28,7 +30,7 @@ public class UnaryOperatorLocation extends BusinessLocation<CtUnaryOperator> {
 
         CompilationUnit origUnit = original.getPosition().getCompilationUnit();
         SourcePosition position = new SourcePositionImpl(origUnit, start, end, origUnit.getLineSeparatorPositions());
-        if (!position.isValidPosition()) return super.getCodePosition(original);
+        if (!position.isValidPosition() || !isValidPosition(original.toString(), position.getSourceStart(), position.getSourceEnd())) return super.getCodePosition(original);
         return new CodePosition(position.getSourceStart(), position.getSourceEnd());
     }
 

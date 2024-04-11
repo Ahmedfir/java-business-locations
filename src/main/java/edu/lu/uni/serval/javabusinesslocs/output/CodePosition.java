@@ -43,4 +43,12 @@ public class CodePosition implements Serializable {
     public int hashCode() {
         return Objects.hash(startPosition, endPosition);
     }
+
+    @Override
+    public String toString() {
+        return "{" +
+                "startPosition=" + startPosition +
+                ", endPosition=" + endPosition +
+                '}';
+    }
 }

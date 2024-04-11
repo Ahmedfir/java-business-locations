@@ -4,8 +4,10 @@ import edu.lu.uni.serval.javabusinesslocs.locator.FileRequest;
 import edu.lu.uni.serval.javabusinesslocs.locator.LocationsCollector;
 import edu.lu.uni.serval.javabusinesslocs.locator.MethodRequest;
 import edu.lu.uni.serval.javabusinesslocs.locator.selection.SelectionMode;
+import edu.lu.uni.serval.javabusinesslocs.output.FileLocations;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -111,7 +113,7 @@ public class CliRequest {
         this.selectionMode = selectionMode;
     }
 
-    public void start() {
+    public List<FileLocations> start() throws IOException {
         LocationsCollector locationsCollector = new LocationsCollector(outputDir);
         int nextMutantId = 0;
         for (FileRequest fileRequest : fileRequests) {
@@ -123,7 +125,7 @@ public class CliRequest {
                 break; // number of tokens achieved.
             nextMutantId = fileRequest.getNextMutantId();
         }
-        locationsCollector.outputResults();
+        return locationsCollector.outputResults();
     }
 
 

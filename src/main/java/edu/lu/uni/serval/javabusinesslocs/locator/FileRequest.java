@@ -1,6 +1,7 @@
 package edu.lu.uni.serval.javabusinesslocs.locator;
 
 import edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation;
+import edu.lu.uni.serval.javabusinesslocs.locations.TextualPositionChecker;
 import edu.lu.uni.serval.javabusinesslocs.locator.selection.*;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
@@ -8,6 +9,7 @@ import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.*;
 import spoon.reflect.visitor.filter.TypeFilter;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -53,7 +55,7 @@ public class FileRequest {
     /**
      * return the methods corresponding to the passed-lines.
      */
-    public void locateMethods() {
+    public void locateMethods() throws IOException {
         Launcher l = createLauncher();
 
         List<CtClass> origClasses = l.getFactory().Package().getRootPackage()
@@ -87,7 +89,7 @@ public class FileRequest {
                 try {
                     locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
                             getSourcePosition(element.ctElement).getLine(),
-                            BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement),
+                            BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement, new TextualPositionChecker(javaFilePath)),
                             element.method.startLine, element.method.endLine, element.method.codePosition);
                     nextMutantId += 5;
 
@@ -104,7 +106,7 @@ public class FileRequest {
      *
      * @param numberOfTokens number of tokens or locations to mask. if it's null, there's no limit.
      */
-    public void locateTokens(Integer numberOfTokens, SelectionMode selectionMode) {
+    public void locateTokens(Integer numberOfTokens, SelectionMode selectionMode) throws IOException {
         Launcher l = createLauncher();
 
         List<CtClass> origClasses = l.getFactory().Package().getRootPackage()
@@ -151,7 +153,7 @@ public class FileRequest {
                 try {
                     locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
                             getSourcePosition(element.ctElement).getLine(),
-                            BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement),
+                            BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement, new TextualPositionChecker(javaFilePath)),
                             element.method.startLine, element.method.endLine, element.method.codePosition);
                     nextMutantId += 5;
                     if (numberOfTokensAchieved(numberOfTokens)) {

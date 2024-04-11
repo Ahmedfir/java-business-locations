@@ -11,11 +11,14 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeReference;
 
+import java.io.IOException;
+
 import static edu.lu.uni.serval.javabusinesslocs.output.Operators.LiteralMutator;
 
 public class BusinessLocation<T extends CtElement> extends Location {
 
     private final static int MAX_EXPECTED_TOKENS = 5;
+    protected PositionChecker positionChecker;
 
     /**
      * @param firstMutantId
@@ -24,29 +27,32 @@ public class BusinessLocation<T extends CtElement> extends Location {
      * @see {https://github.com/rdegiovanni/mBERT}
      * @see {CodeBERTOperatorMutator#process(spoon.reflect.declaration.CtElement)}
      */
-    public static BusinessLocation createBusinessLocation(int firstMutantId, CtElement ctElement) throws UnhandledElementException {
+    public static BusinessLocation createBusinessLocation(int firstMutantId, CtElement ctElement, PositionChecker positionChecker) throws UnhandledElementException, IOException {
+        BusinessLocation res;
         if (ctElement instanceof CtBinaryOperator) {
-            return new BinaryOperatorLocation(firstMutantId, (CtBinaryOperator) ctElement);
+            res= new BinaryOperatorLocation(firstMutantId, (CtBinaryOperator) ctElement, positionChecker);
         } else if (ctElement instanceof CtUnaryOperator) {
-            return new UnaryOperatorLocation(firstMutantId, (CtUnaryOperator) ctElement);
+            res= new UnaryOperatorLocation(firstMutantId, (CtUnaryOperator) ctElement, positionChecker);
         } else if (ctElement instanceof CtAssignment) {
-            return new AssignmentLocation(firstMutantId, (CtAssignment) ctElement);
+            res= new AssignmentLocation(firstMutantId, (CtAssignment) ctElement, positionChecker);
         } else if (ctElement instanceof CtArrayRead ||
                 ctElement instanceof CtArrayWrite) {
-            return new ArrayAccessLocation(firstMutantId, (CtArrayAccess) ctElement);
+            res= new ArrayAccessLocation(firstMutantId, (CtArrayAccess) ctElement, positionChecker);
         } else if (ctElement instanceof CtFieldReference) {
-            return new FieldReferenceLocation(firstMutantId, (CtFieldReference) ctElement);
+            res= new FieldReferenceLocation(firstMutantId, (CtFieldReference) ctElement, positionChecker);
         } else if (ctElement instanceof CtTypeReference) {
-            return new TypeReferenceLocation(firstMutantId, (CtTypeReference) ctElement);
+            res= new TypeReferenceLocation(firstMutantId, (CtTypeReference) ctElement, positionChecker);
         } else if (ctElement instanceof CtInvocation) {
-            return new InvocationLocation(firstMutantId, (CtInvocation) ctElement);
+            res= new InvocationLocation(firstMutantId, (CtInvocation) ctElement, positionChecker);
         } else {
-            return new BusinessLocation(firstMutantId, ctElement);
+            res= new BusinessLocation(firstMutantId, ctElement, positionChecker);
         }
+        return res;
     }
 
 
-    protected BusinessLocation(int firstMutantId, T ctElement) throws UnhandledElementException {
+    protected BusinessLocation(int firstMutantId, T ctElement, PositionChecker positionChecker) throws UnhandledElementException, IOException {
+        this.positionChecker = positionChecker;
         this.operator = getOperatorByType(ctElement).name();
         this.nodeType = getNodeTypeName(ctElement);
         this.firstMutantId = firstMutantId;
@@ -60,12 +66,25 @@ public class BusinessLocation<T extends CtElement> extends Location {
     }
 
 
-    protected CodePosition getCodePosition(T ctElement) throws UnhandledElementException {
+    protected CodePosition getCodePosition(T ctElement) throws UnhandledElementException, IOException {
         SourcePosition pos = ctElement.getPosition();
+        CodePosition cp;
         if (pos == null || !pos.isValidPosition()) {
             throw new UnhandledElementException(getNodeTypeName(ctElement), "getCodePosition = " + pos);
         }
-        return new CodePosition(pos.getSourceStart(), pos.getSourceEnd());
+        String elementText = ctElement.toString();
+        cp = new CodePosition(pos.getSourceStart(), pos.getSourceEnd());
+        if (!isValidPosition(elementText, cp.getStartPosition(), cp.getEndPosition())) {
+            cp = new CodePosition(pos.getSourceStart() - pos.getLine(), pos.getSourceEnd() - pos.getLine());
+        }
+        if (!isValidPosition(elementText, cp.getStartPosition(), cp.getEndPosition())) {
+            throw new UnhandledElementException(getNodeTypeName(ctElement), "getCodePosition = " + pos);
+        }
+        return cp;
+    }
+
+    protected boolean isValidPosition(String text, int start, int end) throws IOException {
+        return positionChecker == null || positionChecker.isValidPosition(text, start, end);
     }
 
     protected CtClass getParentClass(T ctElement) {
@@ -85,7 +104,7 @@ public class BusinessLocation<T extends CtElement> extends Location {
         return getNodeType(ctElement).getSimpleName();
     }
 
-    public int getExpectedMutants(){
+    public int getExpectedMutants() {
         return MAX_EXPECTED_TOKENS;
     }
 

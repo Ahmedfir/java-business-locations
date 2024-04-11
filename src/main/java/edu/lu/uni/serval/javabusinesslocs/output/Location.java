@@ -24,8 +24,24 @@ public class Location implements Serializable {
         return firstMutantId == location.firstMutantId && Objects.equals(codePosition, location.codePosition) && Objects.equals(node, location.node) && Objects.equals(operator, location.operator);
     }
 
+    public CodePosition getCodePosition(){
+        return this.codePosition;
+    }
+
     @Override
     public int hashCode() {
         return Objects.hash(codePosition, node, firstMutantId, operator);
+    }
+
+    @Override
+    public String toString() {
+        return "Location{" +
+                "node='" + node + '\'' +
+                ", codePosition=" + codePosition +
+                ", nodeType='" + nodeType + '\'' +
+                ", firstMutantId=" + firstMutantId +
+                ", operator='" + operator + '\'' +
+                ", suffix='" + suffix + '\'' +
+                '}';
     }
 }

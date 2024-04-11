@@ -13,6 +13,6 @@ public enum Operators {
     FieldReferenceMutator,
     InvocationMutator,
     TypeReferenceMutator,
-    UnaryOperatorMutator
-
+    UnaryOperatorMutator,
+    IfConditionReferenceLocation
 }

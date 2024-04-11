@@ -15,7 +15,17 @@ import static edu.lu.uni.serval.javabusinesslocs.output.Operators.LiteralMutator
 
 public class BusinessLocation<T extends CtElement> extends Location {
 
-    private final static int MAX_EXPECTED_TOKENS = 5;
+    private final static int MAX_EXPECTED_TOKENS = Integer.getInteger("PREDICTIONS_NUMBER", 5);
+    /**
+     * Set this true if you want to get the locations of the if conditions, otherwise false.
+     * e.g. pass -DIF_CONDITIONS_AS_TKN=true
+     * input source code: if (a==b)
+     * output location added of: "a==b"
+     *
+     * @see IfConditionReferenceLocation
+     * default value is false
+     */
+    public static boolean IF_CONDITIONS_AS_TKN = Boolean.getBoolean("IF_CONDITIONS_AS_TKN");
 
     /**
      * @param firstMutantId
@@ -25,7 +35,9 @@ public class BusinessLocation<T extends CtElement> extends Location {
      * @see {CodeBERTOperatorMutator#process(spoon.reflect.declaration.CtElement)}
      */
     public static BusinessLocation createBusinessLocation(int firstMutantId, CtElement ctElement) throws UnhandledElementException {
-        if (ctElement instanceof CtBinaryOperator) {
+        if (IF_CONDITIONS_AS_TKN && ctElement.getParent() instanceof CtIf) {
+            return new IfConditionReferenceLocation(firstMutantId, (CtExpression<Boolean>) ctElement);
+        } else if (ctElement instanceof CtBinaryOperator) {
             return new BinaryOperatorLocation(firstMutantId, (CtBinaryOperator) ctElement);
         } else if (ctElement instanceof CtUnaryOperator) {
             return new UnaryOperatorLocation(firstMutantId, (CtUnaryOperator) ctElement);
@@ -85,7 +97,7 @@ public class BusinessLocation<T extends CtElement> extends Location {
         return getNodeType(ctElement).getSimpleName();
     }
 
-    public int getExpectedMutants(){
+    public int getExpectedMutants() {
         return MAX_EXPECTED_TOKENS;
     }
 

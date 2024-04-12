@@ -29,8 +29,9 @@ public final class LocsUtils {
         if (e.getPosition() != null && e.getPosition().isValidPosition())
             return e.getPosition();
         if (e.getParent() != null)
-            System.err.println("returning parent position for " + e.getClass());
+            //System.err.println("returning parent position for " + e.getClass());
             return getSourcePosition(e.getParent());
+        return null;
     }
 
 

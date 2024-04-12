@@ -26,6 +26,7 @@ public class BusinessLocation<T extends CtElement> extends Location {
      * default value is false
      */
     public static boolean IF_CONDITIONS_AS_TKN = Boolean.getBoolean("IF_CONDITIONS_AS_TKN");
+    public static boolean LOOP_CONDITIONS_AS_TKN = Boolean.getBoolean("LOOP_CONDITIONS_AS_TKN");
 
     /**
      * @param firstMutantId
@@ -37,7 +38,9 @@ public class BusinessLocation<T extends CtElement> extends Location {
     public static BusinessLocation createBusinessLocation(int firstMutantId, CtElement ctElement) throws UnhandledElementException {
         if (IF_CONDITIONS_AS_TKN && ctElement.getParent() instanceof CtIf) {
             return new IfConditionReferenceLocation(firstMutantId, (CtExpression<Boolean>) ctElement);
-        } else if (ctElement instanceof CtBinaryOperator) {
+        } else if (LOOP_CONDITIONS_AS_TKN && ctElement.getParent() instanceof CtLoop) {
+            return new LoopConditionLocation(firstMutantId, (CtExpression<Boolean>) ctElement);
+        }else if (ctElement instanceof CtBinaryOperator) {
             return new BinaryOperatorLocation(firstMutantId, (CtBinaryOperator) ctElement);
         } else if (ctElement instanceof CtUnaryOperator) {
             return new UnaryOperatorLocation(firstMutantId, (CtUnaryOperator) ctElement);

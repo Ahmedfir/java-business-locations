@@ -6,6 +6,8 @@ import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeReference;
 
+import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.CONDITIONS_AS_TKN;
+
 public final class LocsUtils {
 
     private LocsUtils() {
@@ -60,6 +62,10 @@ public final class LocsUtils {
         if (candidate instanceof CtExpression
                 || candidate instanceof CtFieldReference)
             return true;
+
+        //to mask if & loop conditions
+        if((candidate instanceof CtIf || candidate instanceof CtLoop) && CONDITIONS_AS_TKN) return true;
+
         if (candidate instanceof CtTypeReference && candidate.getParent() != null
                 && candidate.getParent() instanceof CtTypeAccess
                 && !inheritsFromConstructorCall(candidate)) {

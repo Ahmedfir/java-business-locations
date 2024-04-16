@@ -4,6 +4,7 @@ import edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation;
 import edu.lu.uni.serval.javabusinesslocs.locator.selection.*;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
+import spoon.reflect.code.CtIf;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.*;
 import spoon.reflect.visitor.filter.TypeFilter;
@@ -148,6 +149,9 @@ public class FileRequest {
         while (selector.hasNext()) {
             //here it finds conditions as elements but not if statement
             Element element = selector.next();
+            if(element instanceof CtIf) {
+                System.out.println(((CtIf) element).getCondition());
+            }
             if (element != null) {
                 try {
                     locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,

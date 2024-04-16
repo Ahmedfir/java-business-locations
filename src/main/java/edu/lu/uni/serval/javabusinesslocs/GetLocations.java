@@ -6,11 +6,15 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 
+import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.CONDITIONS_AS_TKN;
+
 public class GetLocations {
 
     public static void main(String... args) {
         try {
-            CliRequest cliRequest = CliRequest.parseArgs(args);
+            String[] req = {"-in=" + "src/test/resources/javafile/CSVRecord.java" + "::" , "-out=" + "src/test/resources/tmp"};
+            CONDITIONS_AS_TKN = true;
+            CliRequest cliRequest = CliRequest.parseArgs(req);
             System.out.println("--- Initialisation --- \n" + cliRequest + "\n -----------------");
             cliRequest.start();
         } catch (Throwable throwable) {

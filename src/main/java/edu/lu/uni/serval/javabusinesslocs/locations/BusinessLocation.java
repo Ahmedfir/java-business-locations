@@ -26,7 +26,7 @@ public class BusinessLocation<T extends CtElement> extends Location {
      * default value is false
      */
     public static boolean IF_CONDITIONS_AS_TKN = Boolean.getBoolean("IF_CONDITIONS_AS_TKN");
-    public static boolean LOOP_CONDITIONS_AS_TKN = Boolean.getBoolean("LOOP_CONDITIONS_AS_TKN");
+    public static boolean CONDITIONS_AS_TKN = Boolean.getBoolean("CONDITIONS_AS_TKN");
 
     /**
      * @param firstMutantId
@@ -36,11 +36,24 @@ public class BusinessLocation<T extends CtElement> extends Location {
      * @see {CodeBERTOperatorMutator#process(spoon.reflect.declaration.CtElement)}
      */
     public static BusinessLocation createBusinessLocation(int firstMutantId, CtElement ctElement) throws UnhandledElementException {
-        if (IF_CONDITIONS_AS_TKN && ctElement.getParent() instanceof CtIf) {
-            return new IfConditionReferenceLocation(firstMutantId, (CtExpression<Boolean>) ctElement);
-        } else if (LOOP_CONDITIONS_AS_TKN && ctElement.getParent() instanceof CtLoop) {
-            return new LoopConditionLocation(firstMutantId, (CtExpression<Boolean>) ctElement);
-        }else if (ctElement instanceof CtBinaryOperator) {
+
+        if(CONDITIONS_AS_TKN) {
+            if (ctElement instanceof CtIf) {
+                return new IfConditionReferenceLocation(firstMutantId, ((CtIf) ctElement).getCondition());
+            } else if (ctElement instanceof CtLoop) {
+                CtExpression expression = null;
+                if (ctElement instanceof CtFor) expression = ((CtFor) ctElement).getExpression();
+                else if (ctElement instanceof CtWhile)
+                    expression = ((CtWhile) ctElement).getLoopingExpression();
+                else if (ctElement instanceof CtDo)
+                    expression = ((CtDo) ctElement).getLoopingExpression();
+
+                if (expression != null) return new LoopConditionLocation(firstMutantId, expression);
+            }
+        }
+
+        //simple tokens
+        if (ctElement instanceof CtBinaryOperator) {
             return new BinaryOperatorLocation(firstMutantId, (CtBinaryOperator) ctElement);
         } else if (ctElement instanceof CtUnaryOperator) {
             return new UnaryOperatorLocation(firstMutantId, (CtUnaryOperator) ctElement);

@@ -49,7 +49,11 @@ public final class LocsUtils {
     }
 
     public static boolean isToBeProcessed(CtElement candidate) {
-        //first we list exceptions
+        //first we check for if & loop conditions => removing implicit elements skips the condition in else if ()
+        if((candidate instanceof CtIf || candidate instanceof CtLoop) && CONDITIONS_AS_TKN) return true;
+
+
+        //we list exceptions
         if (isImplicit(candidate))
             return false;
         if (candidate instanceof CtConstructorCall ||
@@ -62,9 +66,6 @@ public final class LocsUtils {
         if (candidate instanceof CtExpression
                 || candidate instanceof CtFieldReference)
             return true;
-
-        //to mask if & loop conditions
-        if((candidate instanceof CtIf || candidate instanceof CtLoop) && CONDITIONS_AS_TKN) return true;
 
         if (candidate instanceof CtTypeReference && candidate.getParent() != null
                 && candidate.getParent() instanceof CtTypeAccess

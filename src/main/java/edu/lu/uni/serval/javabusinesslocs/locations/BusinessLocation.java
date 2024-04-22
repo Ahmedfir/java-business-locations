@@ -39,6 +39,7 @@ public class BusinessLocation<T extends CtElement> extends Location {
 
         if(CONDITIONS_AS_TKN) {
             if (ctElement instanceof CtIf) {
+                //System.out.println("IF CONDITION : " + ((CtIf) ctElement).getCondition().toString() + "\n");
                 return new IfConditionReferenceLocation(firstMutantId, ((CtIf) ctElement).getCondition());
             } else if (ctElement instanceof CtLoop) {
                 CtExpression expression = null;

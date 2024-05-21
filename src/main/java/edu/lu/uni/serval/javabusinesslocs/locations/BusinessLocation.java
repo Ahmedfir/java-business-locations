@@ -39,19 +39,15 @@ public class BusinessLocation<T extends CtElement> extends Location {
 
         if(CONDITIONS_AS_TKN) {
             if (ctElement instanceof CtIf) {
-                //System.out.println("IF CONDITION : " + ((CtIf) ctElement).getCondition().toString() + "\n");
                 return new IfConditionReferenceLocation(firstMutantId, ((CtIf) ctElement).getCondition());
-            } else if (ctElement instanceof CtLoop) {
-                CtExpression expression = null;
-                if (ctElement instanceof CtFor) expression = ((CtFor) ctElement).getExpression();
-                else if (ctElement instanceof CtWhile)
-                    expression = ((CtWhile) ctElement).getLoopingExpression();
-                else if (ctElement instanceof CtDo)
-                    expression = ((CtDo) ctElement).getLoopingExpression();
-
-                if (expression != null) return new LoopConditionLocation(firstMutantId, expression);
+            } else if(ctElement instanceof CtWhile) {
+                return new WhileConditionLocation(firstMutantId, ((CtWhile) ctElement).getLoopingExpression());
+            } else if(ctElement instanceof CtFor) {
+                return new WhileConditionLocation(firstMutantId, ((CtFor) ctElement).getExpression());
+            } else if (ctElement instanceof CtDo)
+                return new WhileConditionLocation(firstMutantId, ((CtDo) ctElement).getLoopingExpression());
             }
-        }
+
 
         //simple tokens
         if (ctElement instanceof CtBinaryOperator) {

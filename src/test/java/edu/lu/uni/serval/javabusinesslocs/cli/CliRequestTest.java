@@ -105,14 +105,14 @@ public class CliRequestTest {
     @Test
     public void sys_test__if_condition_location() throws IOException {
         Path expectDir = expectedDir.resolve("sys_test__if_condition_location");
-        //assertTrue(expectDir.toFile().isDirectory());
+        assertTrue(expectDir.toFile().isDirectory());
         Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
         File expectedFile = expectedJson.toFile();
-        //assertTrue(expectedFile.isFile());
+        assertTrue(expectedFile.isFile());
 
         Path outDir = outputDir.resolve("sys_test__if_condition_location");
         Files.createDirectories(outDir);
-        //assertTrue(outputDir.toFile().isDirectory());
+        assertTrue(outputDir.toFile().isDirectory());
         File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
 
         String[] req = {"-in=" + file_with_conditions + "::" , "-out=" + outDir};
@@ -181,6 +181,6 @@ public class CliRequestTest {
 
     @AfterClass
     public static void afterClass() throws Exception {
-        //FileUtils.deleteDirectory(outputDir.toFile());
+        FileUtils.deleteDirectory(outputDir.toFile());
     }
 }

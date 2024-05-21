@@ -16,4 +16,7 @@ public enum Operators {
     UnaryOperatorMutator,
     IfConditionReferenceLocation,
     LoopConditionLocation,
+    ForConditionLocation,
+    WhileConditionLocation,
+    DoConditionLocation,
 }

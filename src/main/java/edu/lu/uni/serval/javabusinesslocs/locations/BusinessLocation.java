@@ -11,9 +11,7 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeReference;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 import static edu.lu.uni.serval.javabusinesslocs.output.Operators.LiteralMutator;

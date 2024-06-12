@@ -30,7 +30,7 @@ public final class LocsUtils {
             return e.getPosition();
         if (e.getParent() != null)
             System.err.println("returning parent position for " + e.getClass());
-            return getSourcePosition(e.getParent());
+        return getSourcePosition(e.getParent());
     }
 
 

@@ -19,13 +19,19 @@ public class Location implements Serializable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || !(o instanceof Location)) return false;
         Location location = (Location) o;
-        return firstMutantId == location.firstMutantId && Objects.equals(codePosition, location.codePosition) && Objects.equals(node, location.node) && Objects.equals(operator, location.operator);
+        return Objects.equals(codePosition, location.codePosition);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(codePosition, node, firstMutantId, operator);
+        return Objects.hash(codePosition);
     }
+
+
+    public void setFirstMutantId(int firstMutantId) {
+        this.firstMutantId = firstMutantId;
+    }
+
 }

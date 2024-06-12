@@ -2,8 +2,10 @@ package edu.lu.uni.serval.javabusinesslocs.cli;
 
 import edu.lu.uni.serval.javabusinesslocs.locator.FileRequest;
 import edu.lu.uni.serval.javabusinesslocs.locator.LocationsCollector;
+import edu.lu.uni.serval.javabusinesslocs.output.*;
 import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -26,6 +28,7 @@ public class CliRequestTest {
 
     private static final String file_with_if = "src/test/resources/javafile/DummyClassWithIf.java";
     private static final String file_1 = "src/test/resources/javafile/ArgumentImpl.java";
+    private static final String nested_if_conditions = "src/test/resources/javafile/DummyClassWithIfNestedCdt.java";
     private static final String lines_1_str = "109@115@124@126";
     private static final List<Integer> lines_1 = new ArrayList<Integer>() {{
         add(109);
@@ -53,6 +56,27 @@ public class CliRequestTest {
         expectedDir = Paths.get("src/test/resources/expected").resolve(CliRequestTest.class.getSimpleName());
         outputDir = Paths.get("src/test/resources/tmp").resolve(CliRequestTest.class.getSimpleName());
         Files.createDirectories(outputDir);
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        // before every method we make sure that the static vars are set to their default values.
+        IF_CONDITIONS_AS_TKN = false;
+    }
+
+    private File[] getOutputAndExpectedFiles(String dir) throws IOException {
+        Path expectDir = expectedDir.resolve(dir);
+        assertTrue(expectDir.toFile().isDirectory());
+        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
+        File expectedFile = expectedJson.toFile();
+        assertTrue(expectedFile.isFile());
+
+        Path outDir = outputDir.resolve(dir);
+        Files.createDirectories(outDir);
+        assertTrue(outputDir.toFile().isDirectory());
+        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
+
+        return new File[]{expectedFile, outDir.toFile(), outFile};
     }
 
     @Test
@@ -103,36 +127,79 @@ public class CliRequestTest {
 
     @Test
     public void sys_test__if_condition_location() throws IOException {
-        Path expectDir = expectedDir.resolve("sys_test__if_condition_location");
-        assertTrue(expectDir.toFile().isDirectory());
-        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
-        File expectedFile = expectedJson.toFile();
-        // assertTrue(expectedFile.isFile());
+        File[] files = getOutputAndExpectedFiles("sys_test__if_condition_location");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
 
-        Path outDir = outputDir.resolve("sys_test__if_condition_location");
-        Files.createDirectories(outDir);
-        assertTrue(outputDir.toFile().isDirectory());
-        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
-
-        String[] req = {"-in=" + file_with_if + "::" , "-out=" + outDir};
+        String[] req = {"-in=" + file_with_if + "::", "-out=" + outDir};
         IF_CONDITIONS_AS_TKN = true;
         CliRequest cliRequest = CliRequest.parseArgs(req);
-        cliRequest.start();
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(file_with_if, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+        assertEquals("DummyClassWithIf", cp.getQualifiedName());
+        assertEquals(1, cp.getMethodPredictions().size());
+        MethodLocations methodP = cp.getMethodPredictions().get(0);
+        assertEquals(2, methodP.getStartLineNumber());
+        assertEquals(5, methodP.getEndLineNumber());
+        assertEquals("meth()", methodP.getMethodSignature());
+        assertEquals(new CodePosition(36, 121), methodP.getCodePosition());
+        assertEquals(2, methodP.getLine_predictions().size());
+        LineLocations lp1 = methodP.getLine_predictions().get(0);
+        LineLocations lp2 = methodP.getLine_predictions().get(1);
+        assertEquals(3, lp1.getLine_number());
+        assertEquals(4, lp2.getLine_number());
+        assertEquals(4, lp1.getLocations().size());
+        assertEquals(7, lp2.getLocations().size());
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
     @Test
-    public void sys_test__process_one_files_multiple_lines() throws IOException {
-        Path expectDir = expectedDir.resolve("sys_test__process_one_files_multiple_lines");
-        assertTrue(expectDir.toFile().isDirectory());
-        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
-        File expectedFile = expectedJson.toFile();
-        assertTrue(expectedFile.isFile());
+    public void sys_test__if_nested_condition_location_mask_full_cdt_enabled() throws IOException {
+        File[] files = getOutputAndExpectedFiles("sys_test__if_nested_condition_location_mask_full_cdt_enabled");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
 
-        Path outDir = outputDir.resolve("sys_test__process_one_files_multiple_lines");
-        Files.createDirectories(outDir);
-        assertTrue(outputDir.toFile().isDirectory());
-        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
+        IF_CONDITIONS_AS_TKN = true;
+        String in_class = nested_if_conditions;
+        String[] req = {"-in=" + in_class, "-out=" + outDir};
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(in_class, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+        assertEquals("DummyClassWithIf", cp.getQualifiedName());
+        assertEquals(1, cp.getMethodPredictions().size());
+        MethodLocations methodP = cp.getMethodPredictions().get(0);
+        assertEquals(2, methodP.getStartLineNumber());
+        assertEquals(4, methodP.getEndLineNumber());
+        assertEquals("meth(int,int)", methodP.getMethodSignature());
+        assertEquals(new CodePosition(36, 114), methodP.getCodePosition());
+        assertEquals(1, methodP.getLine_predictions().size());
+        LineLocations lp = methodP.getLine_predictions().get(0);
+        assertEquals(3, lp.getLine_number());
+        assertEquals(8, lp.getLocations().size());
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+
+    @Test
+    public void sys_test__process_one_files_multiple_lines() throws IOException {
+        File[] files = getOutputAndExpectedFiles("sys_test__process_one_files_multiple_lines");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
 
         String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-out=" + outDir, "-n=5"};
         CliRequest cliRequest = CliRequest.parseArgs(req);
@@ -142,39 +209,61 @@ public class CliRequestTest {
 
     @Test
     public void sys_test__process_one_file_no_lines() throws IOException {
-        Path expectDir = expectedDir.resolve("sys_test__process_one_file_no_lines");
-        assertTrue(expectDir.toFile().isDirectory());
-        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
-        File expectedFile = expectedJson.toFile();
-        assertTrue(expectedFile.isFile());
+        File[] files = getOutputAndExpectedFiles("sys_test__process_one_file_no_lines");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
 
-        Path outDir = outputDir.resolve("sys_test__process_one_file_no_lines");
-        Files.createDirectories(outDir);
-        assertTrue(outputDir.toFile().isDirectory());
-        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
-
-        String[] req = {"-in=" + file_1 , "-out=" + outDir, "-n=5","-selection=random"};
+        String[] req = {"-in=" + file_1, "-out=" + outDir, "-n=5", "-selection=random"};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
+
     @Test
     public void sys_test__process_3_files_no_lines() throws IOException {
-        Path expectDir = expectedDir.resolve("sys_test__process_3_files_no_lines");
-        assertTrue(expectDir.toFile().isDirectory());
-        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
-        File expectedFile = expectedJson.toFile();
-        assertTrue(expectedFile.isFile());
+        File[] files = getOutputAndExpectedFiles("sys_test__process_3_files_no_lines");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
 
-        Path outDir = outputDir.resolve("sys_test__process_3_files_no_lines");
-        Files.createDirectories(outDir);
-        assertTrue(outputDir.toFile().isDirectory());
-        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
-
-        String[] req = {"-in=" + FILE_3 ,"-in=" + FILE_4 ,"-in=" + FILE_5 , "-out=" + outDir};
+        String[] req = {"-in=" + FILE_3, "-in=" + FILE_4, "-in=" + FILE_5, "-out=" + outDir};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+
+    @Test
+    public void sys_test__process_1_if_nested_conditions() throws IOException {
+        File[] files = getOutputAndExpectedFiles("sys_test__process_1_if_nested_conditions");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
+
+        String in_class = nested_if_conditions;
+        String[] req = {"-in=" + in_class, "-out=" + outDir};
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(in_class, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+        assertEquals("DummyClassWithIf", cp.getQualifiedName());
+        assertEquals(1, cp.getMethodPredictions().size());
+        MethodLocations methodP = cp.getMethodPredictions().get(0);
+        assertEquals(2, methodP.getStartLineNumber());
+        assertEquals(4, methodP.getEndLineNumber());
+        assertEquals("meth(int,int)", methodP.getMethodSignature());
+        assertEquals(new CodePosition(36, 114), methodP.getCodePosition());
+        assertEquals(1, methodP.getLine_predictions().size());
+        LineLocations lp = methodP.getLine_predictions().get(0);
+        assertEquals(3, lp.getLine_number());
+        assertEquals(7, lp.getLocations().size());
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 

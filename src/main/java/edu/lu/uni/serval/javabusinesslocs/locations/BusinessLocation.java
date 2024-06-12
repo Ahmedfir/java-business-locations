@@ -11,6 +11,11 @@ import spoon.reflect.declaration.CtElement;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeReference;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
+
 import static edu.lu.uni.serval.javabusinesslocs.output.Operators.LiteralMutator;
 
 public class BusinessLocation<T extends CtElement> extends Location {
@@ -34,27 +39,30 @@ public class BusinessLocation<T extends CtElement> extends Location {
      * @see {https://github.com/rdegiovanni/mBERT}
      * @see {CodeBERTOperatorMutator#process(spoon.reflect.declaration.CtElement)}
      */
-    public static BusinessLocation createBusinessLocation(int firstMutantId, CtElement ctElement) throws UnhandledElementException {
-        if (IF_CONDITIONS_AS_TKN && ctElement.getParent() instanceof CtIf) {
-            return new IfConditionReferenceLocation(firstMutantId, (CtExpression<Boolean>) ctElement);
-        } else if (ctElement instanceof CtBinaryOperator) {
-            return new BinaryOperatorLocation(firstMutantId, (CtBinaryOperator) ctElement);
+    public static Set<BusinessLocation> createBusinessLocation(int firstMutantId, CtElement ctElement) throws UnhandledElementException {
+        Set<BusinessLocation> res = new LinkedHashSet<>();
+        if (ctElement instanceof CtBinaryOperator) {
+            res.add(new BinaryOperatorLocation(firstMutantId, (CtBinaryOperator) ctElement));
         } else if (ctElement instanceof CtUnaryOperator) {
-            return new UnaryOperatorLocation(firstMutantId, (CtUnaryOperator) ctElement);
+            res.add(new UnaryOperatorLocation(firstMutantId, (CtUnaryOperator) ctElement));
         } else if (ctElement instanceof CtAssignment) {
-            return new AssignmentLocation(firstMutantId, (CtAssignment) ctElement);
+            res.add(new AssignmentLocation(firstMutantId, (CtAssignment) ctElement));
         } else if (ctElement instanceof CtArrayRead ||
                 ctElement instanceof CtArrayWrite) {
-            return new ArrayAccessLocation(firstMutantId, (CtArrayAccess) ctElement);
+            res.add(new ArrayAccessLocation(firstMutantId, (CtArrayAccess) ctElement));
         } else if (ctElement instanceof CtFieldReference) {
-            return new FieldReferenceLocation(firstMutantId, (CtFieldReference) ctElement);
+            res.add(new FieldReferenceLocation(firstMutantId, (CtFieldReference) ctElement));
         } else if (ctElement instanceof CtTypeReference) {
-            return new TypeReferenceLocation(firstMutantId, (CtTypeReference) ctElement);
+            res.add(new TypeReferenceLocation(firstMutantId, (CtTypeReference) ctElement));
         } else if (ctElement instanceof CtInvocation) {
-            return new InvocationLocation(firstMutantId, (CtInvocation) ctElement);
+            res.add(new InvocationLocation(firstMutantId, (CtInvocation) ctElement));
         } else {
-            return new BusinessLocation(firstMutantId, ctElement);
+            res.add(new BusinessLocation(firstMutantId, ctElement));
         }
+        if (IF_CONDITIONS_AS_TKN && ctElement.getParent() instanceof CtIf) {
+            res.add(new IfConditionReferenceLocation(firstMutantId, (CtExpression<Boolean>) ctElement));
+        }
+        return res;
     }
 
 

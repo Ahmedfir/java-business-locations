@@ -1,13 +1,11 @@
 package edu.lu.uni.serval.javabusinesslocs.output;
 
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class LineLocations implements Queryable<Integer> {
     private int line_number;
-    private List<Location> locations;
+    private Set<Location> locations;
 
     public LineLocations() {
     }
@@ -28,12 +26,12 @@ public class LineLocations implements Queryable<Integer> {
 
     public void addPredictions(Location location) {
         if (locations == null) {
-            locations = new ArrayList<>();
+            locations = new LinkedHashSet<>();
         }
         locations.add(location);
     }
 
-    public List<Location> getLocations() {
+    public Set<Location> getLocations() {
         return locations;
     }
 

@@ -44,6 +44,20 @@ public class MethodLocations extends Mappable<Integer, LineLocations> implements
         }
     }
 
+
+    public int getStartLineNumber() {
+        return startLineNumber;
+    }
+
+    public int getEndLineNumber() {
+        return endLineNumber;
+    }
+
+    public CodePosition getCodePosition() {
+        return codePosition;
+    }
+
+
     public String getMethodSignature() {
         return methodSignature;
     }

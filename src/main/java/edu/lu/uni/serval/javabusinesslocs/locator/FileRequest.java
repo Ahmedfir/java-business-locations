@@ -10,6 +10,7 @@ import spoon.reflect.visitor.filter.TypeFilter;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import static edu.lu.uni.serval.javabusinesslocs.locator.LocsUtils.getSourcePosition;
 import static edu.lu.uni.serval.javabusinesslocs.locator.LocsUtils.isMethod;
@@ -57,7 +58,7 @@ public class FileRequest {
         Launcher l = createLauncher();
 
         List<CtClass> origClasses = l.getFactory().Package().getRootPackage()
-                .getElements(new TypeFilter<CtClass>(CtClass.class));
+                .getElements(new TypeFilter<>(CtClass.class));
         if (origClasses == null || origClasses.isEmpty()) {
             System.err.println("Ignored File: No class found in " + javaFilePath);
             return;
@@ -85,12 +86,14 @@ public class FileRequest {
             Element element = selector.next();
             if (element != null) {
                 try {
-                    locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
-                            getSourcePosition(element.ctElement).getLine(),
-                            BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement),
-                            element.method.startLine, element.method.endLine, element.method.codePosition);
-                    nextMutantId += 5;
-
+                    Set<BusinessLocation> businessLocs = BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement);
+                    for (BusinessLocation businessLoc : businessLocs) {
+                        businessLoc.setFirstMutantId(nextMutantId);
+                        locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
+                                getSourcePosition(element.ctElement).getLine(), businessLoc, element.method.startLine,
+                                element.method.endLine, element.method.codePosition);
+                        nextMutantId += 5;
+                    }
                 } catch (BusinessLocation.UnhandledElementException exception) {
                     locationsCollector.addUnhandledMutations(exception.getNodeType());
                     System.err.println(exception);
@@ -108,7 +111,7 @@ public class FileRequest {
         Launcher l = createLauncher();
 
         List<CtClass> origClasses = l.getFactory().Package().getRootPackage()
-                .getElements(new TypeFilter<CtClass>(CtClass.class));
+                .getElements(new TypeFilter<>(CtClass.class));
         if (origClasses == null || origClasses.isEmpty()) {
             System.err.println("Ignored File: No class found in " + javaFilePath);
             return;
@@ -149,11 +152,14 @@ public class FileRequest {
             Element element = selector.next();
             if (element != null) {
                 try {
-                    locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
-                            getSourcePosition(element.ctElement).getLine(),
-                            BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement),
-                            element.method.startLine, element.method.endLine, element.method.codePosition);
-                    nextMutantId += 5;
+                    Set<BusinessLocation> businessLocs = BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement);
+                    for (BusinessLocation businessLoc : businessLocs) {
+                        businessLoc.setFirstMutantId(nextMutantId);
+                        locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
+                                getSourcePosition(element.ctElement).getLine(), businessLoc, element.method.startLine,
+                                element.method.endLine, element.method.codePosition);
+                        nextMutantId += 5;
+                    }
                     if (numberOfTokensAchieved(numberOfTokens)) {
                         break;
                     }

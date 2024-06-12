@@ -111,7 +111,7 @@ public class CliRequest {
         this.selectionMode = selectionMode;
     }
 
-    public void start() {
+    public LocationsCollector start() {
         LocationsCollector locationsCollector = new LocationsCollector(outputDir);
         int nextMutantId = 0;
         for (FileRequest fileRequest : fileRequests) {
@@ -124,6 +124,7 @@ public class CliRequest {
             nextMutantId = fileRequest.getNextMutantId();
         }
         locationsCollector.outputResults();
+        return locationsCollector;
     }
 
 

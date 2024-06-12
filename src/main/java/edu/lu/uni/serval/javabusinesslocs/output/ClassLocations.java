@@ -59,6 +59,10 @@ public class ClassLocations extends Mappable<String, MethodLocations> implements
         methodPredictions.add(methodLocations);
     }
 
+    public String getQualifiedName() {
+        return qualifiedName;
+    }
+
     @Override
     public String getQueryable() {
         return qualifiedName;

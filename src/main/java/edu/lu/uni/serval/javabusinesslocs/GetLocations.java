@@ -11,10 +11,8 @@ import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.COND
 public class GetLocations {
 
     public static void main(String... args) {
-        String[] req  = {"-in=src/test/resources/javafile/ExtendedBufferedReader.java::", "-out=src/test/resources/tmp"};
-        CONDITIONS_AS_TKN = true;
         try {
-            CliRequest cliRequest = CliRequest.parseArgs(req);
+            CliRequest cliRequest = CliRequest.parseArgs(args);
             System.out.println("--- Initialisation --- \n" + cliRequest + "\n -----------------");
             cliRequest.start();
         } catch (Throwable throwable) {

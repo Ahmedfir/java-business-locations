@@ -24,7 +24,7 @@ public class CliRequestTest {
     private static final String FILE_3 = "src/test/resources/javafile/Role.java";
     private static final String FILE_4 = "src/test/resources/javafile/User.java";
     private static final String FILE_5 = "src/test/resources/javafile/UserRole.java";
-
+    private static final String dummy_file_with_loop = "src/test/resources/javafile/DummyClassWithLoop.java";
     private static final String file_with_conditions = "src/test/resources/javafile/ExtendedBufferedReader.java";
     private static final String file_1 = "src/test/resources/javafile/ArgumentImpl.java";
     private static final String lines_1_str = "109@115@124@126";

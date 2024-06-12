@@ -43,9 +43,9 @@ public class BusinessLocation<T extends CtElement> extends Location {
             } else if(ctElement instanceof CtWhile) {
                 return new WhileConditionLocation(firstMutantId, ((CtWhile) ctElement).getLoopingExpression());
             } else if(ctElement instanceof CtFor) {
-                return new WhileConditionLocation(firstMutantId, ((CtFor) ctElement).getExpression());
+                return new ForConditionLocation(firstMutantId, ((CtFor) ctElement).getExpression());
             } else if (ctElement instanceof CtDo)
-                return new WhileConditionLocation(firstMutantId, ((CtDo) ctElement).getLoopingExpression());
+                return new DoConditionLocation(firstMutantId, ((CtDo) ctElement).getLoopingExpression());
             }
 
 

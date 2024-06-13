@@ -42,6 +42,11 @@ public final class LocsUtils {
 
 
     public static boolean isImplicit(CtElement e) {
+        //makes the children of else if(condition) not implicit
+        //allows parsing locations in else if
+        if(e.getParent() instanceof CtIf)
+            e.setImplicit(false);
+
         if (e == null || isMethod(e) || e instanceof CtClass)
             return false;
         if (e.isImplicit())
@@ -53,13 +58,7 @@ public final class LocsUtils {
     }
 
     public static boolean isToBeProcessed(CtElement candidate) {
-        //first we check for if & loop conditions => removing implicit elements skips the condition in else if ()
-        if ((IF_CONDITIONS_AS_TKN && candidate instanceof CtIf)
-                || (CONDITIONS_AS_TKN && (candidate instanceof CtIf || candidate instanceof CtLoop))) return true;
-
-
-        //we list exceptions
-        if (isImplicit(candidate))
+        if (isImplicit(candidate)) {
             return false;
         if (candidate instanceof CtConstructorCall ||
                 candidate instanceof CtTypeAccess ||

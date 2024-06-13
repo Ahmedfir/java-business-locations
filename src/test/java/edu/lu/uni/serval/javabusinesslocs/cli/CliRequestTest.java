@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.IF_CONDITIONS_AS_TKN;
+import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.CONDITIONS_AS_TKN;
 import static org.junit.Assert.*;
 
 public class CliRequestTest {
@@ -23,8 +24,8 @@ public class CliRequestTest {
     private static final String FILE_3 = "src/test/resources/javafile/Role.java";
     private static final String FILE_4 = "src/test/resources/javafile/User.java";
     private static final String FILE_5 = "src/test/resources/javafile/UserRole.java";
-
-    private static final String file_with_if = "src/test/resources/javafile/DummyClassWithIf.java";
+    private static final String dummy_file_with_loop = "src/test/resources/javafile/DummyClassWithLoop.java";
+    private static final String file_with_conditions = "src/test/resources/javafile/ExtendedBufferedReader.java";
     private static final String file_1 = "src/test/resources/javafile/ArgumentImpl.java";
     private static final String lines_1_str = "109@115@124@126";
     private static final List<Integer> lines_1 = new ArrayList<Integer>() {{
@@ -107,15 +108,53 @@ public class CliRequestTest {
         assertTrue(expectDir.toFile().isDirectory());
         Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
         File expectedFile = expectedJson.toFile();
-        // assertTrue(expectedFile.isFile());
+        assertTrue(expectedFile.isFile());
 
         Path outDir = outputDir.resolve("sys_test__if_condition_location");
         Files.createDirectories(outDir);
         assertTrue(outputDir.toFile().isDirectory());
         File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
 
-        String[] req = {"-in=" + file_with_if + "::" , "-out=" + outDir};
-        IF_CONDITIONS_AS_TKN = true;
+        String[] req = {"-in=" + file_with_conditions + "::" , "-out=" + outDir};
+        CONDITIONS_AS_TKN = true;
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        cliRequest.start();
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+    @Test
+    public void sys_test__nested_condition_location() throws IOException {
+        Path expectDir = expectedDir.resolve("sys_test__nested_condition_location");
+        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
+        File expectedFile = expectedJson.toFile();
+
+        Path outDir = outputDir.resolve("sys_test__nested_condition_location");
+        Files.createDirectories(outDir);
+        assertTrue(outputDir.toFile().isDirectory());
+        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
+
+        String[] req = {"-in=" + "src/test/resources/javafile/DummyClassWithNestedCondition.java" + "::" , "-out=" + outDir};
+        CONDITIONS_AS_TKN = false;
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        cliRequest.start();
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+    @Test
+    public void sys_test__while_condition_location() throws IOException {
+        Path expectDir = expectedDir.resolve("sys_test__while_condition_location");
+        assertTrue(expectDir.toFile().isDirectory());
+        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
+        File expectedFile = expectedJson.toFile();
+        assertTrue(expectedFile.isFile());
+
+        Path outDir = outputDir.resolve("sys_test__while_condition_location");
+        Files.createDirectories(outDir);
+        assertTrue(outputDir.toFile().isDirectory());
+        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
+
+        String[] req = {"-in=" + dummy_file_with_loop + "::" , "-out=" + outDir};
+        CONDITIONS_AS_TKN = true;
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
@@ -133,7 +172,7 @@ public class CliRequestTest {
         Files.createDirectories(outDir);
         assertTrue(outputDir.toFile().isDirectory());
         File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
-
+        CONDITIONS_AS_TKN = false;
         String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-out=" + outDir, "-n=5"};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
@@ -152,7 +191,7 @@ public class CliRequestTest {
         Files.createDirectories(outDir);
         assertTrue(outputDir.toFile().isDirectory());
         File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
-
+        CONDITIONS_AS_TKN = false;
         String[] req = {"-in=" + file_1 , "-out=" + outDir, "-n=5","-selection=random"};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
@@ -171,7 +210,7 @@ public class CliRequestTest {
         Files.createDirectories(outDir);
         assertTrue(outputDir.toFile().isDirectory());
         File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
-
+        CONDITIONS_AS_TKN = false;
         String[] req = {"-in=" + FILE_3 ,"-in=" + FILE_4 ,"-in=" + FILE_5 , "-out=" + outDir};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();

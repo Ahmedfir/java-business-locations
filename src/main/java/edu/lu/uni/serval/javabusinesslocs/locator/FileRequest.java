@@ -4,7 +4,6 @@ import edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation;
 import edu.lu.uni.serval.javabusinesslocs.locator.selection.*;
 import spoon.Launcher;
 import spoon.reflect.CtModel;
-import spoon.reflect.code.CtIf;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.*;
 import spoon.reflect.visitor.filter.TypeFilter;

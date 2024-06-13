@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.IF_CONDITIONS_AS_TKN;
+import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.CONDITIONS_AS_TKN;
 import static org.junit.Assert.*;
 
 public class CliRequestTest {
@@ -29,6 +30,8 @@ public class CliRequestTest {
     private static final String file_with_if = "src/test/resources/javafile/DummyClassWithIf.java";
     private static final String file_with_else_if = "src/test/resources/javafile/DummyClassWithElseIf.java";
     private static final String file_with_nested_else_if = "src/test/resources/javafile/DummyClassWithNestedElseIf.java";
+    private static final String dummy_file_with_loop = "src/test/resources/javafile/DummyClassWithLoop.java";
+    private static final String file_with_conditions = "src/test/resources/javafile/ExtendedBufferedReader.java";
     private static final String file_1 = "src/test/resources/javafile/ArgumentImpl.java";
     private static final String nested_if_conditions = "src/test/resources/javafile/DummyClassWithIfNestedCdt.java";
     private static final String lines_1_str = "109@115@124@126";
@@ -154,7 +157,6 @@ public class CliRequestTest {
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
-
     @Test
     public void sys_test__process_3_files_no_lines() throws IOException {
         File[] files = getOutputAndExpectedFiles("sys_test__process_3_files_no_lines");
@@ -168,6 +170,25 @@ public class CliRequestTest {
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
+    @Test
+    public void sys_test__while_condition_location() throws IOException {
+        Path expectDir = expectedDir.resolve("sys_test__while_condition_location");
+        assertTrue(expectDir.toFile().isDirectory());
+        Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
+        File expectedFile = expectedJson.toFile();
+        assertTrue(expectedFile.isFile());
+
+        Path outDir = outputDir.resolve("sys_test__while_condition_location");
+        Files.createDirectories(outDir);
+        assertTrue(outputDir.toFile().isDirectory());
+        File outFile = outDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME).toFile();
+
+        String[] req = {"-in=" + dummy_file_with_loop + "::" , "-out=" + outDir};
+        CONDITIONS_AS_TKN = true;
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        cliRequest.start();
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
 
     @Test
     public void sys_test__process_1_if_nested_conditions() throws IOException {
@@ -352,6 +373,6 @@ public class CliRequestTest {
 
     @AfterClass
     public static void afterClass() throws Exception {
-       FileUtils.deleteDirectory(outputDir.toFile());
+        FileUtils.deleteDirectory(outputDir.toFile());
     }
 }

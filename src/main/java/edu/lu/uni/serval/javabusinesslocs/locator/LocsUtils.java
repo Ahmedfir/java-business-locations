@@ -6,6 +6,10 @@ import spoon.reflect.declaration.*;
 import spoon.reflect.reference.CtFieldReference;
 import spoon.reflect.reference.CtTypeReference;
 
+import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.CONDITIONS_AS_TKN;
+import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.IF_CONDITIONS_AS_TKN;
+
+
 public final class LocsUtils {
 
     private LocsUtils() {
@@ -24,12 +28,15 @@ public final class LocsUtils {
 
 
     public static SourcePosition getSourcePosition(CtElement e) {
-        if (e == null)
+        if (e == null) {
             return null;
-        if (e.getPosition() != null && e.getPosition().isValidPosition())
+        }
+        if (e.getPosition() != null && e.getPosition().isValidPosition()) {
             return e.getPosition();
-        if (e.getParent() != null)
-            System.err.println("returning parent position for " + e.getClass());
+        }
+        //if (e.getParent() != null){
+        // System.err.println("returning parent position for " + e.getClass());
+        //}
         return getSourcePosition(e.getParent());
     }
 
@@ -46,7 +53,12 @@ public final class LocsUtils {
     }
 
     public static boolean isToBeProcessed(CtElement candidate) {
-        //first we list exceptions
+        //first we check for if & loop conditions => removing implicit elements skips the condition in else if ()
+        if ((IF_CONDITIONS_AS_TKN && candidate instanceof CtIf)
+                || (CONDITIONS_AS_TKN && (candidate instanceof CtIf || candidate instanceof CtLoop))) return true;
+
+
+        //we list exceptions
         if (isImplicit(candidate))
             return false;
         if (candidate instanceof CtConstructorCall ||
@@ -59,6 +71,7 @@ public final class LocsUtils {
         if (candidate instanceof CtExpression
                 || candidate instanceof CtFieldReference)
             return true;
+
         if (candidate instanceof CtTypeReference && candidate.getParent() != null
                 && candidate.getParent() instanceof CtTypeAccess
                 && !inheritsFromConstructorCall(candidate)) {

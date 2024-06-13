@@ -1,5 +1,6 @@
 package edu.lu.uni.serval.javabusinesslocs.locator.selection;
 
+import spoon.reflect.code.CtIf;
 import spoon.reflect.cu.SourcePosition;
 import spoon.reflect.declaration.CtElement;
 import spoon.reflect.declaration.CtExecutable;
@@ -31,6 +32,7 @@ public abstract class OrderedSelection implements ElementsSelector {
 
     @Override
     public Element next() {
+
         if (notLastElement()) {
             currentElementPos++;
             CtElement ctElement = methodsElementsToBeMutated.get(currentElementPos);
@@ -53,6 +55,7 @@ public abstract class OrderedSelection implements ElementsSelector {
             if (sourcePosition != null) {
                 methodsElementsToBeMutated = ctMethod.getElements(arg0 ->
                         isToBeProcessed(arg0) && isLineToMutate(getSourcePosition(arg0).getLine()));
+
                 this.currentMethod = new Method(ctMethod.getSignature(), sourcePosition);
             }
         }

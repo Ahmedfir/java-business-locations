@@ -14,5 +14,9 @@ public enum Operators {
     InvocationMutator,
     TypeReferenceMutator,
     UnaryOperatorMutator,
-    IfConditionReferenceLocation
+    IfConditionReferenceLocation,
+    LoopConditionLocation,
+    ForConditionLocation,
+    WhileConditionLocation,
+    DoConditionLocation,
 }

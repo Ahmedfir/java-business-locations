@@ -56,7 +56,8 @@ public class BusinessLocation<T extends CtElement> extends Location {
             res.add(new TypeReferenceLocation(firstMutantId, (CtTypeReference) ctElement));
         } else if (ctElement instanceof CtInvocation) {
             res.add(new InvocationLocation(firstMutantId, (CtInvocation) ctElement));
-        } else {
+        } else if(!(ctElement instanceof CtLoop || ctElement instanceof CtIf)){
+            //check that it's not a loop or if otherwise it enters here
             res.add(new BusinessLocation(firstMutantId, ctElement));
         }
 

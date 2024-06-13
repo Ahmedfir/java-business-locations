@@ -58,6 +58,12 @@ public final class LocsUtils {
     }
 
     public static boolean isToBeProcessed(CtElement candidate) {
+        //while, for, do and if are labeled implicit by the method isImplicit
+        if((CONDITIONS_AS_TKN && candidate instanceof CtLoop)
+            ||((CONDITIONS_AS_TKN || IF_CONDITIONS_AS_TKN) && candidate instanceof CtIf)){
+            return !candidate.isImplicit();
+        }
+
         if (isImplicit(candidate)) {
             return false;
         if (candidate instanceof CtConstructorCall ||

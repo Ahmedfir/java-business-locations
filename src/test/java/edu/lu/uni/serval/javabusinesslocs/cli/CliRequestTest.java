@@ -89,12 +89,13 @@ public class CliRequestTest {
 
     @Test
     public void parseArgs_multiple_included_files_multiple_lines() {
-        String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-in=" + file_2 + "::" + lines_2_str, "-out=out", "-n=5"};
+        int requested_number_of_locs = 5;
+        String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-in=" + file_2 + "::" + lines_2_str, "-out=out", "-n="+requested_number_of_locs};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         assertNotNull(cliRequest.fileRequests);
         assertEquals("out", cliRequest.outputDir);
         assertEquals(2, cliRequest.fileRequests.size());
-        assertEquals(new Integer(5), cliRequest.numberOfTokens);
+        assertEquals(new Integer(requested_number_of_locs), cliRequest.numberOfTokens);
         FileRequest req1 = cliRequest.fileRequests.get(0);
         FileRequest req2 = cliRequest.fileRequests.get(1);
         assertEquals(IFREQ1, req1);
@@ -141,7 +142,9 @@ public class CliRequestTest {
         File outDir = files[1];
         File outFile = files[2];
 
-        String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-out=" + outDir, "-n=5"};
+        int requested_number_of_locs = 5;
+
+        String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-out=" + outDir, "-n="+requested_number_of_locs};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
@@ -154,7 +157,9 @@ public class CliRequestTest {
         File outDir = files[1];
         File outFile = files[2];
 
-        String[] req = {"-in=" + file_1, "-out=" + outDir, "-n=5", "-selection=random"};
+        int requested_number_of_locs = 5;
+
+        String[] req = {"-in=" + file_1, "-out=" + outDir, "-n="+requested_number_of_locs, "-selection=random"};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         LocationsCollector locator = cliRequest.start();
         List<FileLocations> fileLocations = locator.getItems();
@@ -172,7 +177,7 @@ public class CliRequestTest {
                 n += l.getLocations().size();
             }
         }
-        assertEquals(5, n);
+        assertEquals(requested_number_of_locs, n);
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
@@ -186,7 +191,7 @@ public class CliRequestTest {
         String[] req = {"-in=" + FILE_3, "-in=" + FILE_4, "-in=" + FILE_5, "-out=" + outDir};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
-        //assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
     @Test
@@ -532,6 +537,6 @@ public class CliRequestTest {
 
     @AfterClass
     public static void afterClass() throws Exception {
-       //FileUtils.deleteDirectory(outputDir.toFile());
+       FileUtils.deleteDirectory(outputDir.toFile());
     }
 }

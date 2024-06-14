@@ -53,7 +53,6 @@ public final class LocsUtils {
             return true;
         if (e.getParent() == null)
             return false;
-
         return isImplicit(e.getParent());
     }
 
@@ -66,6 +65,7 @@ public final class LocsUtils {
 
         if (isImplicit(candidate)) {
             return false;
+        }
         if (candidate instanceof CtConstructorCall ||
                 candidate instanceof CtTypeAccess ||
                 candidate instanceof CtNewArray ||

@@ -132,6 +132,7 @@ public class CliRequest {
         assert cliArgPrefix == FILE_INCLUDE_REQUEST || cliArgPrefix == FILE_EXCLUDE_REQUEST;
         String[] splits = argBody.split(":");
         String filePath = splits[0];
+        System.out.println("PATH " + filePath);
         if (!new File(filePath).exists()) {
             correctUssage("wrong file path", new IllegalArgumentException(filePath));
             return null;

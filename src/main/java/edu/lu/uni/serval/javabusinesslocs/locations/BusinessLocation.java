@@ -29,6 +29,7 @@ public class BusinessLocation<T extends CtElement> extends Location {
      * default value is false
      */
     public static boolean IF_CONDITIONS_AS_TKN = Boolean.getBoolean("IF_CONDITIONS_AS_TKN");
+    public static boolean CONDITIONS_AS_TKN = Boolean.getBoolean("CONDITIONS_AS_TKN");
 
     /**
      * @param firstMutantId
@@ -39,6 +40,7 @@ public class BusinessLocation<T extends CtElement> extends Location {
      */
     public static Set<BusinessLocation> createBusinessLocation(int firstMutantId, CtElement ctElement) throws UnhandledElementException {
         Set<BusinessLocation> res = new LinkedHashSet<>();
+        // simple tokens parsing first
         if (ctElement instanceof CtBinaryOperator) {
             res.add(new BinaryOperatorLocation(firstMutantId, (CtBinaryOperator) ctElement));
         } else if (ctElement instanceof CtUnaryOperator) {
@@ -54,12 +56,27 @@ public class BusinessLocation<T extends CtElement> extends Location {
             res.add(new TypeReferenceLocation(firstMutantId, (CtTypeReference) ctElement));
         } else if (ctElement instanceof CtInvocation) {
             res.add(new InvocationLocation(firstMutantId, (CtInvocation) ctElement));
-        } else {
+        } else if(!(ctElement instanceof CtLoop || ctElement instanceof CtIf)){
+            //check that it's not a loop or if otherwise it enters here
             res.add(new BusinessLocation(firstMutantId, ctElement));
         }
-        if (IF_CONDITIONS_AS_TKN && ctElement.getParent() instanceof CtIf) {
-            res.add(new IfConditionReferenceLocation(firstMutantId, (CtExpression<Boolean>) ctElement));
+
+        // parse complex (full conditions) tokens.
+        if (IF_CONDITIONS_AS_TKN || CONDITIONS_AS_TKN){
+            if (ctElement instanceof CtIf) {
+                res.add(new IfConditionReferenceLocation(firstMutantId, ((CtIf) ctElement).getCondition()));
+            }
         }
+
+        if(CONDITIONS_AS_TKN) {
+            if(ctElement instanceof CtWhile) {
+                res.add(new WhileConditionLocation(firstMutantId, ((CtWhile) ctElement).getLoopingExpression()));
+            } else if(ctElement instanceof CtFor) {
+                res.add(new ForConditionLocation(firstMutantId, ((CtFor) ctElement).getExpression()));
+            } else if (ctElement instanceof CtDo)
+                res.add(new DoConditionLocation(firstMutantId, ((CtDo) ctElement).getLoopingExpression()));
+        }
+
         return res;
     }
 

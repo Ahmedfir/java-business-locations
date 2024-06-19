@@ -150,6 +150,7 @@ public class FileRequest {
 
         while (selector.hasNext()) {
             Element element = selector.next();
+
             if (element != null) {
                 try {
                     Set<BusinessLocation> businessLocs = BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement);

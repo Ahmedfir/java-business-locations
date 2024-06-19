@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
 
+
 public class GetLocations {
 
     public static void main(String... args) {

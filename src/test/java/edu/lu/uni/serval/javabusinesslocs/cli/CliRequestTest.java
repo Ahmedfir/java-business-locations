@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.IF_CONDITIONS_AS_TKN;
+import static edu.lu.uni.serval.javabusinesslocs.locations.BusinessLocation.CONDITIONS_AS_TKN;
 import static org.junit.Assert.*;
 
 public class CliRequestTest {
@@ -29,8 +30,12 @@ public class CliRequestTest {
     private static final String file_with_if = "src/test/resources/javafile/DummyClassWithIf.java";
     private static final String file_with_else_if = "src/test/resources/javafile/DummyClassWithElseIf.java";
     private static final String file_with_nested_else_if = "src/test/resources/javafile/DummyClassWithNestedElseIf.java";
+    private static final String dummy_file_with_loop = "src/test/resources/javafile/DummyClassWithLoop.java";
+    private static final String dummy_file_with_for = "src/test/resources/javafile/DummyClassWithFor.java";
+    private static final String file_with_try_catch = "src/test/resources/javafile/DummyClassWithTryCatch.java";
     private static final String file_1 = "src/test/resources/javafile/ArgumentImpl.java";
     private static final String nested_if_conditions = "src/test/resources/javafile/DummyClassWithIfNestedCdt.java";
+    private static final String DummyClassWithElseIfWithBrackets = "src/test/resources/javafile/DummyClassWithElseIfWithBrackets.java";
     private static final String lines_1_str = "109@115@124@126";
     private static final List<Integer> lines_1 = new ArrayList<Integer>() {{
         add(109);
@@ -61,14 +66,15 @@ public class CliRequestTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         // before every method we make sure that the static vars are set to their default values.
         IF_CONDITIONS_AS_TKN = false;
+        CONDITIONS_AS_TKN = false;
     }
 
     private File[] getOutputAndExpectedFiles(String dir) throws IOException {
         Path expectDir = expectedDir.resolve(dir);
-        assertTrue(expectDir.toFile().isDirectory());
+       assertTrue(expectDir.toFile().isDirectory());
         Path expectedJson = expectDir.resolve(LocationsCollector.DEFAULT_JSON_LOCATIONS_FILE_NAME);
         File expectedFile = expectedJson.toFile();
         assertTrue(expectedFile.isFile());
@@ -83,12 +89,13 @@ public class CliRequestTest {
 
     @Test
     public void parseArgs_multiple_included_files_multiple_lines() {
-        String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-in=" + file_2 + "::" + lines_2_str, "-out=out", "-n=5"};
+        int requested_number_of_locs = 5;
+        String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-in=" + file_2 + "::" + lines_2_str, "-out=out", "-n="+requested_number_of_locs};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         assertNotNull(cliRequest.fileRequests);
         assertEquals("out", cliRequest.outputDir);
         assertEquals(2, cliRequest.fileRequests.size());
-        assertEquals(new Integer(5), cliRequest.numberOfTokens);
+        assertEquals(new Integer(requested_number_of_locs), cliRequest.numberOfTokens);
         FileRequest req1 = cliRequest.fileRequests.get(0);
         FileRequest req2 = cliRequest.fileRequests.get(1);
         assertEquals(IFREQ1, req1);
@@ -135,7 +142,9 @@ public class CliRequestTest {
         File outDir = files[1];
         File outFile = files[2];
 
-        String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-out=" + outDir, "-n=5"};
+        int requested_number_of_locs = 5;
+
+        String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-out=" + outDir, "-n="+requested_number_of_locs};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
@@ -148,12 +157,29 @@ public class CliRequestTest {
         File outDir = files[1];
         File outFile = files[2];
 
-        String[] req = {"-in=" + file_1, "-out=" + outDir, "-n=5", "-selection=random"};
+        int requested_number_of_locs = 5;
+
+        String[] req = {"-in=" + file_1, "-out=" + outDir, "-n="+requested_number_of_locs, "-selection=random"};
         CliRequest cliRequest = CliRequest.parseArgs(req);
-        cliRequest.start();
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(file_1, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+
+        assertEquals("org.apache.commons.cli2.option.ArgumentImpl", cp.getQualifiedName());
+        int n = 0;
+        for (MethodLocations m : cp.getMethodPredictions()) {
+            for (LineLocations l : m.getLine_predictions()) {
+                n += l.getLocations().size();
+            }
+        }
+        assertEquals(requested_number_of_locs, n);
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
-
 
     @Test
     public void sys_test__process_3_files_no_lines() throws IOException {
@@ -168,6 +194,89 @@ public class CliRequestTest {
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
+    @Test
+    public void sys_test__while_condition_location() throws IOException {
+        File[] files = getOutputAndExpectedFiles("sys_test__while_condition_location");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
+        String[] req = {"-in=" + dummy_file_with_loop + "::" , "-out=" + outDir};
+        CONDITIONS_AS_TKN = true;
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(dummy_file_with_loop, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+
+        assertEquals("DummyClassWithLoop", cp.getQualifiedName());
+        assertEquals(1, cp.getMethodPredictions().size());
+        MethodLocations methodP = cp.getMethodPredictions().get(0);
+        assertEquals(2, methodP.getStartLineNumber());
+        assertEquals(7, methodP.getEndLineNumber());
+        assertEquals("main(java.lang.String[])", methodP.getMethodSignature());
+        assertEquals(3, methodP.getLine_predictions().size());
+
+        LineLocations lp1 = methodP.getLine_predictions().get(0);
+        assertEquals(3, lp1.getLine_number());
+        assertEquals(1, lp1.getLocations().size());
+
+        LineLocations lp2 = methodP.getLine_predictions().get(1);
+        assertEquals(4, lp2.getLine_number());
+        assertEquals(4, lp2.getLocations().size());
+
+        LineLocations lp3 = methodP.getLine_predictions().get(2);
+        assertEquals(5, lp3.getLine_number());
+        assertEquals(2, lp3.getLocations().size());
+
+
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+    @Test
+    public void sys_test__for_condition_location() throws IOException {
+        File[] files = getOutputAndExpectedFiles("sys_test__for_condition_location");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
+        String[] req = {"-in=" + dummy_file_with_for + "::" , "-out=" + outDir};
+        CONDITIONS_AS_TKN = true;
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(dummy_file_with_for, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+
+        assertEquals("DummyClassWithFor", cp.getQualifiedName());
+        assertEquals(1, cp.getMethodPredictions().size());
+        MethodLocations methodP = cp.getMethodPredictions().get(0);
+        assertEquals(2, methodP.getStartLineNumber());
+        assertEquals(8, methodP.getEndLineNumber());
+        assertEquals("main(java.lang.String[])", methodP.getMethodSignature());
+        assertEquals(3, methodP.getLine_predictions().size());
+
+        LineLocations lp1 = methodP.getLine_predictions().get(0);
+        assertEquals(3, lp1.getLine_number());
+        assertEquals(1, lp1.getLocations().size());
+
+        LineLocations lp2 = methodP.getLine_predictions().get(1);
+        assertEquals(4, lp2.getLine_number());
+        assertEquals(7, lp2.getLocations().size());
+
+        LineLocations lp3 = methodP.getLine_predictions().get(2);
+        assertEquals(5, lp3.getLine_number());
+        //fixme : the entire assignment is a location
+        assertEquals(5, lp3.getLocations().size());
+
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
 
     @Test
     public void sys_test__process_1_if_nested_conditions() throws IOException {
@@ -203,6 +312,48 @@ public class CliRequestTest {
 
 
     @Test
+    public void sys_test__file__DummyClassWithElseIfWithBrackets() throws IOException {
+        File[] files = getOutputAndExpectedFiles("sys_test__file__DummyClassWithElseIfWithBrackets");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
+
+        String in_class = DummyClassWithElseIfWithBrackets;
+        String[] req = {"-in=" + in_class, "-out=" + outDir};
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(in_class, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+        assertEquals("DummyClassWithElseIfWithBrackets", cp.getQualifiedName());
+        assertEquals(1, cp.getMethodPredictions().size());
+        MethodLocations methodP = cp.getMethodPredictions().get(0);
+        assertEquals(2, methodP.getStartLineNumber());
+        assertEquals(8, methodP.getEndLineNumber());
+        assertEquals("meth(int,int)", methodP.getMethodSignature());
+        assertEquals(new CodePosition(52, 194), methodP.getCodePosition());
+        assertEquals(4, methodP.getLine_predictions().size());
+        LineLocations lp1 = methodP.getLine_predictions().get(0);
+        LineLocations lp2 = methodP.getLine_predictions().get(1);
+        LineLocations lp3 = methodP.getLine_predictions().get(2);
+        LineLocations lp4 = methodP.getLine_predictions().get(3);
+        assertEquals(3, lp1.getLine_number());
+        assertEquals(4, lp2.getLine_number());
+        assertEquals(5, lp3.getLine_number());
+        assertEquals(6, lp4.getLine_number());
+        assertEquals(1, lp1.getLocations().size());
+        assertEquals(1, lp2.getLocations().size());
+        assertEquals(3, lp3.getLocations().size());
+        assertEquals(3, lp4.getLocations().size());
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+
+    @Test
     public void sys_test__nested_else_if__mask_full_cdt_disabled() throws IOException {
         File[] files = getOutputAndExpectedFiles("sys_test__nested_else_if__mask_full_cdt_disabled");
         File expectedFile = files[0];
@@ -210,7 +361,6 @@ public class CliRequestTest {
         File outFile = files[2];
 
         String[] req = {"-in=" + file_with_nested_else_if + "::", "-out=" + outDir};
-        IF_CONDITIONS_AS_TKN = false;
         CliRequest cliRequest = CliRequest.parseArgs(req);
         LocationsCollector locator = cliRequest.start();
         List<FileLocations> fileLocations = locator.getItems();
@@ -232,8 +382,45 @@ public class CliRequestTest {
         LineLocations lp2 = methodP.getLine_predictions().get(1);
         assertEquals(3, lp1.getLine_number());
         assertEquals(5, lp2.getLine_number());
-        assertEquals(1, lp1.getLocations().size());
+        assertEquals(2, lp1.getLocations().size());
         assertEquals(3, lp2.getLocations().size());
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+    @Test
+    public void sys_test__try_catch() throws IOException {
+        File[] files = getOutputAndExpectedFiles("sys_test__try_catch");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
+
+        String[] req = {"-in=" + file_with_try_catch + "::", "-out=" + outDir};
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(file_with_try_catch, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+        assertEquals("DummyClassWithTryCatch", cp.getQualifiedName());
+        assertEquals(1, cp.getMethodPredictions().size());
+        MethodLocations methodP = cp.getMethodPredictions().get(0);
+        assertEquals(2, methodP.getStartLineNumber());
+        assertEquals(10, methodP.getEndLineNumber());
+        assertEquals("meth(int,int)", methodP.getMethodSignature());
+        assertEquals(new CodePosition(42, 235), methodP.getCodePosition());
+        assertEquals(3, methodP.getLine_predictions().size());
+        LineLocations lp1 = methodP.getLine_predictions().get(0);
+        LineLocations lp2 = methodP.getLine_predictions().get(1);
+        LineLocations lp3 = methodP.getLine_predictions().get(2);
+        assertEquals(4, lp1.getLine_number());
+        assertEquals(6, lp2.getLine_number());
+        assertEquals(7, lp3.getLine_number());
+        assertEquals(2, lp1.getLocations().size());
+        assertEquals(3, lp2.getLocations().size());
+        assertEquals(3, lp3.getLocations().size());
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
@@ -266,10 +453,13 @@ public class CliRequestTest {
         assertEquals(3, methodP.getLine_predictions().size());
         LineLocations lp1 = methodP.getLine_predictions().get(0);
         LineLocations lp2 = methodP.getLine_predictions().get(1);
+        LineLocations lp3 = methodP.getLine_predictions().get(2);
         assertEquals(3, lp1.getLine_number());
         assertEquals(5, lp2.getLine_number());
-        assertEquals(1, lp1.getLocations().size());
+        assertEquals(6, lp3.getLine_number());
+        assertEquals(2, lp1.getLocations().size());
         assertEquals(4, lp2.getLocations().size());
+        assertEquals(3, lp3.getLocations().size());
         assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
@@ -282,7 +472,6 @@ public class CliRequestTest {
         File outFile = files[2];
 
         String[] req = {"-in=" + file_with_else_if + "::", "-out=" + outDir};
-        IF_CONDITIONS_AS_TKN = false;
         CliRequest cliRequest = CliRequest.parseArgs(req);
         LocationsCollector locator = cliRequest.start();
         List<FileLocations> fileLocations = locator.getItems();
@@ -299,16 +488,14 @@ public class CliRequestTest {
         assertEquals(5, methodP.getEndLineNumber());
         assertEquals("meth(int,int)", methodP.getMethodSignature());
         assertEquals(new CodePosition(40, 142), methodP.getCodePosition());
-        // fixme issue
-//        assertEquals(2, methodP.getLine_predictions().size());
-//        LineLocations lp1 = methodP.getLine_predictions().get(0);
-//        LineLocations lp2 = methodP.getLine_predictions().get(1);
-//        assertEquals(3, lp1.getLine_number());
-//        assertEquals(4, lp2.getLine_number());
-//        assertEquals(1, lp1.getLocations().size());
-//        assertEquals(6, lp2.getLocations().size());
-        // fixme the expectedFile must be fixed too.
-        // assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        assertEquals(2, methodP.getLine_predictions().size());
+        LineLocations lp1 = methodP.getLine_predictions().get(0);
+        LineLocations lp2 = methodP.getLine_predictions().get(1);
+        assertEquals(3, lp1.getLine_number());
+        assertEquals(4, lp2.getLine_number());
+        assertEquals(2, lp1.getLocations().size());
+        assertEquals(6, lp2.getLocations().size());
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
 
@@ -337,16 +524,14 @@ public class CliRequestTest {
         assertEquals(5, methodP.getEndLineNumber());
         assertEquals("meth(int,int)", methodP.getMethodSignature());
         assertEquals(new CodePosition(40, 142), methodP.getCodePosition());
-        // fixme issue
-//        assertEquals(2, methodP.getLine_predictions().size());
-//        LineLocations lp1 = methodP.getLine_predictions().get(0);
-//        LineLocations lp2 = methodP.getLine_predictions().get(1);
-//        assertEquals(3, lp1.getLine_number());
-//        assertEquals(4, lp2.getLine_number());
-//        assertEquals(1, lp1.getLocations().size());
-//        assertEquals(7, lp2.getLocations().size());
-        // fixme the expectedFile must be fixed too.
-        // assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        assertEquals(2, methodP.getLine_predictions().size());
+        LineLocations lp1 = methodP.getLine_predictions().get(0);
+        LineLocations lp2 = methodP.getLine_predictions().get(1);
+        assertEquals(3, lp1.getLine_number());
+        assertEquals(4, lp2.getLine_number());
+        assertEquals(2, lp1.getLocations().size());
+        assertEquals(7, lp2.getLocations().size());
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
 

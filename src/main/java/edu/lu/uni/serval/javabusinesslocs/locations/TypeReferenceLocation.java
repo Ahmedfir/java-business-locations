@@ -24,12 +24,17 @@ public class TypeReferenceLocation extends BusinessLocation<CtTypeReference> {
 
         //compute token to mutate position
         int start = origPosition.getSourceStart();
-        int end = start + originalStr.length()-1;
+        int end = origPosition.getSourceEnd();
         CompilationUnit origUnit = origPosition.getCompilationUnit();
         SourcePosition position = new SourcePositionImpl(origUnit,start,end,origUnit.getLineSeparatorPositions());
         if (!position.isValidPosition()) return super.getCodePosition(ctElement);
         return new CodePosition(position.getSourceStart(), position.getSourceEnd());
 
+    }
+
+    @Override
+    protected String getOriginalValueOfTheNode(CtTypeReference ctElement) {
+        return ctElement.getSimpleName();
     }
 
     @Override

@@ -94,7 +94,9 @@ public class BusinessLocation<T extends CtElement> extends Location {
         return ctElement.toString();
     }
 
-
+    public CodePosition getCodePosition() {
+        return this.codePosition;
+    }
     protected CodePosition getCodePosition(T ctElement) throws UnhandledElementException {
         SourcePosition pos = ctElement.getPosition();
         if (pos == null || !pos.isValidPosition()) {

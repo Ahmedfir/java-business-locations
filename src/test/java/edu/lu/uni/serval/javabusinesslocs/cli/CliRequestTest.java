@@ -30,7 +30,7 @@ public class CliRequestTest {
     private static final String FILE_4 = "src/test/resources/javafile/User.java";
     private static final String FILE_5 = "src/test/resources/javafile/UserRole.java";
     private static final String file_with_static_invocation = "src/test/resources/javafile/DummyClassWithStaticInvocation.java";
-    private static final String file_with_if = "src/test/resources/javafile/DummyClassWithIf.java";
+    private static final String file_with_field_reference = "src/test/resources/javafile/DummyClass.java";
     private static final String file_with_else_if = "src/test/resources/javafile/DummyClassWithElseIf.java";
     private static final String file_with_nested_else_if = "src/test/resources/javafile/DummyClassWithNestedElseIf.java";
     private static final String dummy_file_with_loop = "src/test/resources/javafile/DummyClassWithLoop.java";
@@ -152,7 +152,9 @@ public class CliRequestTest {
         String[] req = {"-in=" + file_1 + "::" + lines_1_str, "-out=" + outDir, "-n="+requested_number_of_locs};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
-        //assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
     @Test
@@ -196,7 +198,7 @@ public class CliRequestTest {
         String[] req = {"-in=" + FILE_3, "-in=" + FILE_4, "-in=" + FILE_5, "-out=" + outDir};
         CliRequest cliRequest = CliRequest.parseArgs(req);
         cliRequest.start();
-        //assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
     @Test
@@ -576,7 +578,7 @@ public class CliRequestTest {
         assertEquals(reference.getCodePosition().getStartPosition(), 440);
         assertEquals(reference.getCodePosition().getEndPosition(), 445);
 
-        //assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
     @Test
@@ -619,7 +621,7 @@ public class CliRequestTest {
         assertEquals(reference.getCodePosition().getStartPosition(), 706);
         assertEquals(reference.getCodePosition().getEndPosition(), 728);
 
-        //assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
     @Test
@@ -662,7 +664,7 @@ public class CliRequestTest {
         assertEquals(reference.getCodePosition().getStartPosition(), 1004);
         assertEquals(reference.getCodePosition().getEndPosition(), 1026);
 
-        //assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
     @Test
@@ -704,7 +706,39 @@ public class CliRequestTest {
         assertEquals(object.getCodePosition().getStartPosition(), 1262);
         assertEquals(object.getCodePosition().getEndPosition(), 1263);
 
-        //assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
+    }
+
+    @Test
+    public void sys_test__field_reference() throws IOException {
+        File[] files = getOutputAndExpectedFiles("sys_test__field_reference");
+        File expectedFile = files[0];
+        File outDir = files[1];
+        File outFile = files[2];
+
+        String[] req = {"-in=" + file_with_field_reference + "::", "-out=" + outDir};
+        IF_CONDITIONS_AS_TKN = false;
+        CliRequest cliRequest = CliRequest.parseArgs(req);
+        LocationsCollector locator = cliRequest.start();
+        List<FileLocations> fileLocations = locator.getItems();
+        assertTrue("nothing parse!", fileLocations != null && !fileLocations.isEmpty());
+        assertEquals("wrong files parsed!", 1, fileLocations.size());
+        FileLocations fileLocation = fileLocations.get(0);
+        assertEquals(file_with_field_reference, fileLocation.getFile_path());
+        assertEquals(1, fileLocation.getClassPredictions().size());
+        ClassLocations cp = fileLocation.getClassPredictions().get(0);
+        assertEquals("org.apache.commons.cli2.option.DummyClass", cp.getQualifiedName());
+        assertEquals(1, cp.getMethodPredictions().size());
+        MethodLocations methodP = cp.getMethodPredictions().get(0);
+        assertEquals(177, methodP.getCodePosition().getStartPosition());
+        assertEquals(292, methodP.getCodePosition().getEndPosition());
+
+        assertEquals(1, methodP.getLine_predictions().size());
+        LineLocations lp1 = methodP.getLine_predictions().get(0);
+        assertEquals(9, lp1.getLine_number());
+        assertEquals(7, lp1.getLocations().size());
+        List<Location> locs = new ArrayList<Location>(lp1.getLocations());
+        assertTrue("The files differ!", FileUtils.contentEquals(expectedFile, outFile));
     }
 
 

@@ -24,7 +24,7 @@ public class FileLocations extends Mappable<String, ClassLocations> implements Q
         return filePredictions;
     }
 
-    public void addPredictions(String className, String methodSignature, int line, Location location,
+    public boolean addPredictions(String className, String methodSignature, int line, Location location,
                                int methodStartLineNumber, int methodEndLine, CodePosition methodCodePosition) {
         ClassLocations classPrediction = getChildrenByQuery(className);
         if (classPrediction == null){
@@ -34,8 +34,9 @@ public class FileLocations extends Mappable<String, ClassLocations> implements Q
                 classPredictions = new ArrayList<>();
             }
             classPredictions.add(classPrediction);
+            return true;
         } else {
-            classPrediction.addPredictions(methodSignature, line, location,
+            return classPrediction.addPredictions(methodSignature, line, location,
                     methodStartLineNumber, methodEndLine, methodCodePosition);
         }
     }

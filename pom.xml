@@ -6,7 +6,7 @@
 
     <groupId>edu.lu.uni.serval.javabusinesslocs</groupId>
     <artifactId>javabusinesslocs</artifactId>
-    <version>1.2.2-SNAPSHOT</version>
+    <version>1.2.4-SNAPSHOT</version>
 
 
     <properties>

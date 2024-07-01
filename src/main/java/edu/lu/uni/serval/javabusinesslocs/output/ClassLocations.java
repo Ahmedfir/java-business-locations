@@ -24,7 +24,7 @@ public class ClassLocations extends Mappable<String, MethodLocations> implements
         return pred;
     }
 
-    public void addPredictions(String methodSignature, int line, Location location,
+    public boolean addPredictions(String methodSignature, int line, Location location,
                                int methodStartLineNumber, int methodEndLine, CodePosition methodCodePosition) {
         MethodLocations pred = getChildrenByQuery(methodSignature);
         if (pred == null){
@@ -34,8 +34,9 @@ public class ClassLocations extends Mappable<String, MethodLocations> implements
                 methodPredictions = new ArrayList<>();
             }
             methodPredictions.add(pred);
+            return true;
         } else {
-            pred.addPredictions(line, location);
+            return pred.addPredictions(line, location);
         }
     }
 

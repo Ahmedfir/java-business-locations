@@ -24,11 +24,11 @@ public class LineLocations implements Queryable<Integer> {
         this.line_number = line_number;
     }
 
-    public void addPredictions(Location location) {
+    public boolean addPredictions(Location location) {
         if (locations == null) {
             locations = new LinkedHashSet<>();
         }
-        locations.add(location);
+        return locations.add(location);
     }
 
     public Set<Location> getLocations() {

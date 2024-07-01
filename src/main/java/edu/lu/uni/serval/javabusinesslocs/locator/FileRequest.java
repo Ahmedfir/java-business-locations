@@ -156,10 +156,12 @@ public class FileRequest {
                     Set<BusinessLocation> businessLocs = BusinessLocation.createBusinessLocation(nextMutantId, element.ctElement);
                     for (BusinessLocation businessLoc : businessLocs) {
                         businessLoc.setFirstMutantId(nextMutantId);
-                        locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
+
+                        boolean added = locationsCollector.addLocation(javaFilePath, classQualifiedName, element.method.signature,
                                 getSourcePosition(element.ctElement).getLine(), businessLoc, element.method.startLine,
                                 element.method.endLine, element.method.codePosition);
-                        nextMutantId += 5;
+                        if(added)
+                            nextMutantId += 5;
                     }
                     if (numberOfTokensAchieved(numberOfTokens)) {
                         break;

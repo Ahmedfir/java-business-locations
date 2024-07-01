@@ -56,7 +56,7 @@ public class LocationsCollector extends Mappable<String, FileLocations> {
         }
     }
 
-    public void addLocation(String fileToBeMutated, String className,
+    public boolean addLocation(String fileToBeMutated, String className,
                             String methodSignature,
                             int line,
                             Location location, int methodStartLineNumber, int methodEndLine, CodePosition methodCodePosition) {
@@ -65,8 +65,9 @@ public class LocationsCollector extends Mappable<String, FileLocations> {
             filePrediction = FileLocations.newInstance(fileToBeMutated, className, methodSignature, line, location,
                     methodStartLineNumber, methodEndLine, methodCodePosition);
             fileLocations.add(filePrediction);
+            return true;
         } else {
-            filePrediction.addPredictions(className, methodSignature, line, location,
+            return filePrediction.addPredictions(className, methodSignature, line, location,
                     methodStartLineNumber, methodEndLine, methodCodePosition);
         }
     }
